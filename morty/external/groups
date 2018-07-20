@@ -1,0 +1,26 @@
+%NUCLEUS
+runningnumber = 0
+type = N
+neighbours = H,C,C
+priority = 1
+name = NH
+mustbe = 1
+%END_NUCLEUS
+
+%NUCLEUS
+runningnumber = 1
+type = N
+neighbours = C,C:N,N,N,N
+priority = 0
+name = Triazine_N
+mustbe = 0
+%END_NUCLEUS
+
+%NUCLEUS
+runningnumber = 0
+type = H
+neighbours = N:C,C
+priority = 0
+name = H_NH
+mustbe = 1
+%END_NUCLEUS

@@ -1,0 +1,12 @@
+# format: nucleus = bondlength:priority:covalent
+# set covalent to false, if you do not want the first neighbours of the atom be treated as second neighbours for others
+
+%BONDS
+H = 1.4e-10:1:1
+C = 1.6e-10:0:1
+N = 1.6e-10:0:1
+Li = 2.15e-10:2:0
+O = 1.6e-10:0:1
+Cl = 1.0e-10:0:1
+Al = 2.0e-10:0:1
+%END_BONDS
