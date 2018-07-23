@@ -13,7 +13,7 @@ from ..util import wigner
 from ..util import euler_to_spherical
 
 
-__all__ = ['zcw', 'intermediate_csa_lineshape', 'intermediate_csa_lineshape_legacy', 'csa', 'csa_legacy']
+__all__ = ['zcw', 'intermediate_csa_lineshape', 'intermediate_csa_lineshape_legacy', 'csa', 'csa_legacy', 'exsy']
 
 
 def zcw(num_angles, spherical=True):
@@ -148,6 +148,16 @@ def _csa_calculate(cos_theta, sin_theta_cos_2_phi, aniso, asym, omega, lb, gb):
     return (np.exp(-0.69314718055994529 * 4 * (fromiso / gb) ** 2) +
             (1 / (1 + (fromiso / lb * 2) ** 2)))
 
+def _omega_vec(mytensor, z, phi):
+    z1 = 1 - z**2
+    z2 = np.sqrt(z1)
+    cosphi = np.cos(phi)
+    sinphi = np.sin(phi)
+    return (mytensor[0, 0] * z1 * cosphi**2 + mytensor[1, 1] * z1 * sinphi**2 + mytensor[2, 2] * z**2 +
+            2 * mytensor[0, 1] * z1 * cosphi * sinphi +
+            2 * mytensor[0, 2] * z * z2 * cosphi +
+            2 * mytensor[1, 2] * z * z2 * sinphi)
+
 def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
                                deg=30, lb=.1e3):
     """
@@ -198,21 +208,11 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
     sites = np.array(sites)
     mag_zero = np.array([x for x in sites[:, 1]],
                         dtype=np.complex)
-    
-    def omega_vec(mytensor, z, phi):
-        z1 = 1 - z**2
-        z2 = np.sqrt(z1)
-        cosphi = np.cos(phi)
-        sinphi = np.sin(phi)
-        return (mytensor[0, 0] * z1 * cosphi**2 + mytensor[1, 1] * z1 * sinphi**2 + mytensor[2, 2] * z**2 +
-                2 * mytensor[0, 1] * z1 * cosphi * sinphi +
-                2 * mytensor[0, 2] * z * z2 * cosphi +
-                2 * mytensor[1, 2] * z * z2 * sinphi)
 
     # Now iterate over the powder angles.
     for i in range(len(z_phi)):
         for j, site in enumerate(sites):
-            omegas[j, j] = omega_vec(site[0].tensor, z_phi[i, 0], z_phi[i, 1]) * 2 * math.pi * 1j
+            omegas[j, j] = _omega_vec(site[0].tensor, z_phi[i, 0], z_phi[i, 1]) * 2 * math.pi * 1j
         prop = scipy.linalg.expm((omegas + rate_mat - lb) * dwell)
         mag_z = mag_zero.copy()
         fid[0] += mag_zero @ mag_z * sum_weighting[i]
@@ -223,6 +223,28 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
     fft = np.fft.fft(fid)
     fft_freq = np.fft.fftfreq(len(time_axis), time_axis[1] - time_axis[0])
     return fid, np.sort(fft_freq), np.array([x for (y, x) in sorted(zip(fft_freq, fft))])
+
+def exsy(axis, tensor1, tensor2, deg):
+    start, end = min(axis), max(axis)
+    step_size = abs(axis[1] - axis[0])
+    mysize = len(axis)
+    spc = np.zeros((mysize, mysize))
+    sampling = np.polynomial.legendre.leggauss(deg)
+    z_phi = np.array(list(itertools.product(.5 * (sampling[0] + 1), math.pi / 4 * (sampling[0] + 1))))
+    z_phi = np.concatenate((z_phi, z_phi + np.array([0, math.pi]), -z_phi + np.array([0, math.pi]),
+                            -z_phi + np.array([0, 2*math.pi])))
+    sum_weighting = np.prod(list(itertools.product(sampling[1], sampling[1])) * 4, axis=1)
+    omega1, omega2 = (omega_vec(tensor1, z_phi[:, 0], z_phi[:, 1]),
+                      omega_vec(tensor2, z_phi[:, 0], z_phi[:, 1]))
+
+    step_size = (end - start) / (mysize - 1)
+    # this is faster, even without cython, because we handle laaaarge arrays if vectorized!
+    for k, l in itertools.product(range(mysize), range(mysize)):
+        calc = np.sum(sum_weighting * np.clip((1 - np.abs((k * step_size + start) - omega1)) / step_size, 0, 1) *
+                      np.clip((1 - np.abs((l * step_size + start) - omega2)) / step_size, 0, 1))
+        spc[k, l] += calc
+        spc[l, k] += calc
+    return spc
 
 def csa(omegas, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
     """

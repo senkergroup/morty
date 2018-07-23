@@ -12,7 +12,3 @@ from .ddevolution import *
 from .lineshapes import *
 from .relaxation import *
 from .spectra import *
-try:
-	from .exsy_csa import exsy_csa
-except ImportError:
-	pass
