@@ -1303,6 +1303,7 @@ class Cell:
         """
         # All atoms must be in the cell, for this to work. If the user didn't
         # call put_atoms_into_cell(), we do this here:
+        atom1, atom2 = self.get_atom(atom1), self.get_atom(atom2)
         for myatom in (atom1, atom2):
             new_position = myatom.position_frac
             for i in range(len(new_position)):
