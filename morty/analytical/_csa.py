@@ -175,7 +175,7 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
         A tuple of sites, each containing (anisotropy, asymmetry, alpha, beta,
         gamma, probability). Alpha, beta and gamma are the Euler angles
         describing the relative orientation of the jump sites.
-    deg : int
+    deg : int, optional
         Degree of Legendre polynomial used for the Gaussian quadrature
         integration.
 
@@ -217,78 +217,147 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
         mag_z = mag_zero.copy()
         fid[0] += mag_zero @ mag_z * sum_weighting[i]
         for j in range(1, fid_size - 1):
-            mag_z = prop @ mag_z
+            np.dot(mag_z, prop, out=mag_z)
+            #mag_z = prop @ mag_z
             fid[j] += mag_zero @ mag_z * sum_weighting[i]
     fid[0] = .5 * (fid[0] + fid[-1])
     fft = np.fft.fft(fid)
     fft_freq = np.fft.fftfreq(len(time_axis), time_axis[1] - time_axis[0])
     return fid, np.sort(fft_freq), np.array([x for (y, x) in sorted(zip(fft_freq, fft))])
 
-def exsy(axis, tensor1, tensor2, deg):
+def exsy(axis, tensors, deg=50, population=None, mode='sum'):
+    """
+    Calculate a 2D CSA EXSY spectrum.
+
+    Parameters
+    ----------
+    axis : array_like
+        Frequency axis that will be used along both dimensions.
+    tensors : tuple of np.ndarray
+        Tuple of (3x3) matrices representing the tensors.
+    deg : int, optional
+        Degree of Legendre polynomial used for the Gaussian quadrature
+        integration.
+    population : np.ndarray
+        Population of the included tensors. Same length as `tensors`.
+    mode : string, optional
+        If 'sum', diagonal and cross intensity is summed up. If 'cross', only
+        cross intensity is returned.
+
+    Returns
+    -------
+    spectrum : np.ndarray
+
+    """
     start, end = min(axis), max(axis)
     step_size = abs(axis[1] - axis[0])
     mysize = len(axis)
     spc = np.zeros((mysize, mysize))
+    num_tensors = len(tensors)
+    if population is None:
+        population = [1] * num_tensors
     sampling = np.polynomial.legendre.leggauss(deg)
     z_phi = np.array(list(itertools.product(.5 * (sampling[0] + 1), math.pi / 4 * (sampling[0] + 1))))
     z_phi = np.concatenate((z_phi, z_phi + np.array([0, math.pi]), -z_phi + np.array([0, math.pi]),
                             -z_phi + np.array([0, 2*math.pi])))
     sum_weighting = np.prod(list(itertools.product(sampling[1], sampling[1])) * 4, axis=1)
-    omega1, omega2 = (omega_vec(tensor1, z_phi[:, 0], z_phi[:, 1]),
-                      omega_vec(tensor2, z_phi[:, 0], z_phi[:, 1]))
+    omegas = [_omega_vec(tensor, z_phi[:, 0], z_phi[:, 1]) for tensor in tensors]
 
-    step_size = (end - start) / (mysize - 1)
-    # this is faster, even without cython, because we handle laaaarge arrays if vectorized!
-    for k, l in itertools.product(range(mysize), range(mysize)):
-        calc = np.sum(sum_weighting * np.clip((1 - np.abs((k * step_size + start) - omega1)) / step_size, 0, 1) *
-                      np.clip((1 - np.abs((l * step_size + start) - omega2)) / step_size, 0, 1))
-        spc[k, l] += calc
-        spc[l, k] += calc
+    # we handle large array, therefore preallocate the memory and use numpys out= syntax.
+    calc1, calc2 = np.empty((mysize, len(z_phi))), np.empty((mysize, len(z_phi)))
+    calc3 = np.empty(spc.shape)
+    ## i, j walk: 1,2; 1,3; 1,4; 2,3; 2,4; 3,4...
+    i, j = 0, 0
+    for m in range(((num_tensors - 1)**2 + (num_tensors - 1)) // 2):
+        if j < num_tensors - 1:
+            j += 1
+        else:
+            i += 1
+            j = i + 1
+
+        # = np.clip((1 - abs(k - omegas[i])) / step_size, 0, 1)
+        np.subtract(axis[np.newaxis].T, omegas[i], out=calc1)
+        np.absolute(calc1, out=calc1)
+        np.divide(calc1, step_size, out=calc1)
+        np.subtract(1, calc1, out=calc1)
+        np.clip(calc1, 0, 1, out=calc1)
+        
+        # 2
+        np.subtract(axis[np.newaxis].T, omegas[j], out=calc2)
+        np.absolute(calc2, out=calc2)
+        np.divide(calc2, step_size, out=calc2)
+        np.subtract(1, calc2, out=calc2)
+        np.clip(calc2, 0, 1, out=calc2)
+        
+        np.multiply(calc1, sum_weighting, out=calc1)
+        np.dot(calc1, calc2.T, out=calc3)
+        spc += calc3
+        if mode == 'sum' and j == i + 1:
+            spc += np.diag(np.sum(calc1, axis=1))
     return spc
 
-def csa(omegas, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
+def csa(axis, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
     """
     Calculates a CSA lineshape.
 
     Parameters
     ----------
-    omegas : array_like
+    axis : array_like
         Values in ppm/hertz where the amplitude is calculated.
     aniso : float
         Anisotropy in ppm/hertz.
     asym : float
         Asymmetry.
-    lb : float
+    iso : float, optional
+        Isotropic shift.
+    lb : float, optional
         Gaussian linebroadening in ppm/hertz.
-    deg : int
+    deg : int, optional
         Degree of Legendre polynomial to use for the Gaussian quadrature
         integration. Depending on linebroadening and asymmetry, values
         between 50 and 150 are reasonable.
-    scaling : float
+    scaling : float, optional
         Scale the result.
 
     """
-    spc = np.zeros(len(omegas))
     sampling = legendre.leggauss(deg)
     z_phi = np.array(list(itertools.product(.5 * (sampling[0] + 1), math.pi / 4 * (sampling[0] + 1))))
-    #z_phi = np.concatenate((z_phi, z_phi + np.array([0, math.pi]), -z_phi + np.array([0, math.pi]), -z_phi + np.array([0, 2*math.pi])))
     sum_weighting = np.prod(list(itertools.product(sampling[1], sampling[1])), axis=1)
-    #sum_weighting = np.prod(list(itertools.product(sampling[1], sampling[1])) * 4, axis=1)
 
     z1 = 1 - z_phi[:, 0]**2
-    z2 = np.sqrt(z1)
     cosphi = np.cos(z_phi[:, 1])
+    np.square(cosphi, out=cosphi)
     sinphi = np.sin(z_phi[:, 1])
-    omega_calc = (-.5 * aniso * (1 + asym) * z1 * cosphi**2 + -.5 * aniso * (1 - asym) * z1 * sinphi**2 + aniso * z_phi[:, 0]**2)
+    np.square(sinphi, out=sinphi)
+    omega_calc = np.empty(len(z_phi))
+    np.multiply(-.5 * aniso * (1 + asym), z1, out=omega_calc)
+    np.multiply(omega_calc, cosphi, out=omega_calc)
+    np.multiply(z1, sinphi, out=z1)
+    np.multiply(z1, -.5 * aniso * (1 - asym), out=z1)
+    np.add(omega_calc, z1, out=omega_calc)
+    np.square(z_phi[:, 0], out=z1)
+    np.multiply(z1, aniso, out=z1)
+    np.add(omega_calc, z1, out=omega_calc)
+    #omega_calc = (-.5 * aniso * (1 + asym) * z1 * cosphi**2 + 
+    # -.5 * aniso * (1 - asym) * z1 * sinphi**2 + aniso * z_phi[:, 0]**2)
 
-    step_size = abs(omegas[0] - omegas[1])
-    for i, omega in enumerate(omegas):
-        spc[i] += np.sum(sum_weighting * np.clip(1 - np.abs(omega - omega_calc - iso) / step_size, 0, 1))
+    step_size = abs(axis[0] - axis[1])
+    # todo speed up!
+    temp = np.empty((len(axis), len(z_phi)))
+    np.subtract(axis[np.newaxis].T, omega_calc, out=temp)
+    np.absolute(temp, out=temp)
+    np.divide(temp, step_size, out=temp)
+    np.subtract(1, temp, out=temp)
+    np.clip(temp, 0, 1, out=temp)
+    np.multiply(temp, sum_weighting, out=temp)
+    spc = np.sum(temp, axis=1)
+    #for i, omega in enumerate(axis):
+    #    spc[i] += np.sum(sum_weighting * np.clip(1 - np.abs(omega - omega_calc - iso) / step_size, 0, 1))
     spc = gaussian_filter1d(spc, gb / step_size)
     lorentzian = lambda x, x0, fwhm: 1 / (1 + ((x - x0) / fwhm * 2)**2)
     lorentz_filtered = np.zeros(len(spc))
     for i, val in enumerate(spc):
-        lorentz_filtered += val * lorentzian(omegas, omegas[i], lb)
+        lorentz_filtered += val * lorentzian(axis, axis[i], lb)
     return lorentz_filtered / max(lorentz_filtered) * scaling
 
 

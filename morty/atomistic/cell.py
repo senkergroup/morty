@@ -1068,6 +1068,14 @@ class Cell:
         """
         distances_array = []
 
+        # put all required atoms inside unit cell
+        for myatom in np.concatenate([np.array(atomset1), np.array(atomset2)]):
+            new_position = myatom.position_frac
+            for i in range(len(new_position)):
+                while new_position[i] >= 1 or new_position[i] < 0:
+                    new_position[i] -= np.floor(new_position[i])
+            myatom.position_frac = new_position
+
         for atom1 in atomset1:
             coord_atom1 = atom1.position_frac
             for atom2 in atomset2:

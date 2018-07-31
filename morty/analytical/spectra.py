@@ -754,18 +754,18 @@ class Spectrum2D(Spectrum):
             self.dim = 2
             self.acqu_pars = acqu_pars
             self.axis_f2 = SpectrumAxis(np.linspace(
-                np.float32(self.proc_pars_f2['OFFSET']),
-                np.float32(self.proc_pars_f2['OFFSET']) -
-                np.float32(self.proc_pars_f2['SW_p']) /
-                np.float32(self.proc_pars_f2['SF']),
-                np.uint16(self.proc_pars_f2['SI'])))
+                np.float(self.proc_pars_f2['OFFSET']),
+                np.float(self.proc_pars_f2['OFFSET']) -
+                np.float(self.proc_pars_f2['SW_p']) /
+                np.float(self.proc_pars_f2['SF']),
+                np.uint(self.proc_pars_f2['SI']), endpoint=False))
             self.proc_pars_f1 = proc_pars_f1
             self.axis_f1 = SpectrumAxis(np.linspace(
-                np.float16(self.proc_pars_f1['OFFSET']),
-                np.float16(self.proc_pars_f1['OFFSET']) -
-                np.float16(self.proc_pars_f1['SW_p']) /
-                np.float16(self.proc_pars_f1['SF']),
-                np.uint16(self.proc_pars_f1['SI'])))
+                np.float(self.proc_pars_f1['OFFSET']),
+                np.float(self.proc_pars_f1['OFFSET']) -
+                np.float(self.proc_pars_f1['SW_p']) /
+                np.float(self.proc_pars_f1['SF']),
+                np.uint(self.proc_pars_f1['SI']), endpoint=False))
 
     def __array__(self):
         return self.spc if self.spc_c is None else self.spc_c
