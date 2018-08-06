@@ -28,7 +28,7 @@ KAPPA_PC7 = 0.232
 
 __all__ = ['KAPPA_SR26', 'KAPPA_PC7', 'dd_coupling_constant', 'dist_from_dd_coupling_constant',
            'dq_buildup_sym', 'dq_buildup_ct', 'dq_gamma_buildup_sym', 'dq_gamma_buildup_ct',
-           'redor_sum_powderangles', 'sq_spinecho']
+           'redor_sum', 'sq_spinecho']
 
 
 def dd_coupling_constant(distance, gamma1, gamma2=None):
@@ -256,8 +256,8 @@ def dq_gamma_buildup_ct(texc, ttot, coupling, kappa):
         return np.real(np.array([0 if np.isnan(x) else x for x in ret]))
     return np.real(0 if np.isnan(ret) else ret)
 
-def redor_sum_powderangles(x_axis, powder_angles, gamma_angles, myspinsystems,
-                           dipole_scaling_factor=1, i_atomset_2=1/2, f1=None):
+def redor_sum(x_axis, powder_angles, gamma_angles, myspinsystems,
+              dipole_scaling_factor=1, i_atomset_2=1/2, f1=None):
     """
     Calculate the normalized REDOR difference signal. Can handle the following
     cases:

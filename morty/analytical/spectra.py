@@ -661,19 +661,25 @@ class Spectrum1D(Spectrum):
         uncert = [None] * len(opt[0])
         for i in range(len(opt[0])):
             # sqrt(pi/ln(2)) = 2.1289340388624525
-            d_sigma = (opt[0][i]['intensity'] * opt[0][i]['eta'] *
-                       2.1289340388624525 * opt[1][i]['sigma']) ** 2
-            d_gamma = ((1 - opt[0][i]['eta']) * opt[0][i]['intensity'] *
-                       np.pi / 2 * opt[1][i]['gamma']) ** 2
-            d_int = ((opt[0][i]['eta'] * opt[0][i]['sigma'] / 2 *
-                      2.1289340388624525 +
-                      (1 - opt[0][i]['eta']) * opt[0][i]['gamma'] *
-                      np.pi / 2) *
-                     opt[1][i]['intensity']) ** 2
-            d_eta = ((opt[0][i]['intensity'] * opt[0][i]['gamma'] / 2 *
-                      2.1289340388624525 - opt[0][i]['intensity'] *
-                      opt[0][i]['gamma'] * np.pi / 2) * opt[1][i]['eta']) ** 2
-            uncert[i] = math.sqrt(d_sigma + d_gamma + d_int + d_eta)
+            if (opt[1][i]['sigma'] is not None and
+                opt[1][i]['eta'] is not None and
+                opt[1][i]['intensity'] is not None and
+                opt[1][i]['gamma'] is not None):
+                d_sigma = (opt[0][i]['intensity'] * opt[0][i]['eta'] *
+                           2.1289340388624525 * opt[1][i]['sigma']) ** 2
+                d_gamma = ((1 - opt[0][i]['eta']) * opt[0][i]['intensity'] *
+                           np.pi / 2 * opt[1][i]['gamma']) ** 2
+                d_int = ((opt[0][i]['eta'] * opt[0][i]['sigma'] / 2 *
+                          2.1289340388624525 +
+                          (1 - opt[0][i]['eta']) * opt[0][i]['gamma'] *
+                          np.pi / 2) *
+                         opt[1][i]['intensity']) ** 2
+                d_eta = ((opt[0][i]['intensity'] * opt[0][i]['gamma'] / 2 *
+                          2.1289340388624525 - opt[0][i]['intensity'] *
+                          opt[0][i]['gamma'] * np.pi / 2) * opt[1][i]['eta']) ** 2
+                uncert[i] = math.sqrt(d_sigma + d_gamma + d_int + d_eta)
+            else:
+                uncert[i] = None
         return [integ, uncert, opt]
 
 
@@ -1151,7 +1157,7 @@ class SpectrumPseudo2D(Spectrum):
                         ('sigma', 1, True, .1, 5, None),
                         ('gamma', 1, True, .1, 5, None),
                         ('intensity', 1, True, 0, 1.5, None),
-                        ('eta', .5, True, 0, 1, None)))
+                        ('eta', .5, True, 0, 1, None)),)
             spc.integrate_deconvoluted(signals, Ppm(20, 0), start_spc=10)
 
         This will perform the fit between 20 ppm and 0 ppm and will use
