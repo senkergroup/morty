@@ -452,11 +452,11 @@ class Spectrum1D(Spectrum):
             self.acqu_pars = acqu_pars
             if axis_f2 is None:
                 self.axis_f2 = SpectrumAxis(np.linspace(
-                    np.float32(self.proc_pars_f2['OFFSET']),
-                    np.float32(self.proc_pars_f2['OFFSET']) -
-                    np.float32(self.proc_pars_f2['SW_p']) /
-                    np.float32(self.proc_pars_f2['SF']),
-                    np.uint16(self.proc_pars_f2['SI'])))
+                    np.float(self.proc_pars_f2['OFFSET']),
+                    np.float(self.proc_pars_f2['OFFSET']) -
+                    np.float(self.proc_pars_f2['SW_p']) /
+                    np.float(self.proc_pars_f2['SF']),
+                    np.uint(self.proc_pars_f2['SI']), endpoint=False))
             else:
                 self.axis_f2 = axis_f2
             self.base = None
@@ -1019,7 +1019,8 @@ class SpectrumPseudo2D(Spectrum):
                              spc_c=self.spc_c[:, i]
                              if self.spc_c is not None else None,
                              proc_pars_f2=self.proc_pars_f2,
-                             acqu_pars=self.acqu_pars)
+                             acqu_pars=self.acqu_pars,
+                             axis_f2=self.axis_f2)
 
     def __len__(self):
         return len(self.spc.T)
