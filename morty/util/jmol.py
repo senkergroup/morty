@@ -23,10 +23,10 @@ COLOR_TABLE = {'O': 'red', 'C': 'grey', 'N': 'blue', 'F': 'green'}
 
 class JmolHandler():
     """
-    Allows to display a :class:`morty.atomistic.Cell` instance inside the IPython Notebook.
+    Allows to display a :class:`morty.modeling.Cell` instance inside the IPython Notebook.
 
     Includes JSmol inside the Notebook to display any structure that can be
-    loaded by :class:`morty.atomistic.Cell`.
+    loaded by :class:`morty.modeling.Cell`.
 
 
     Notes
@@ -42,7 +42,7 @@ class JmolHandler():
     Let us assume you want to display a cell with the carbons labelled
     with their chemical group assignment: ::
 
-        mycell = morty.atomistic.Cell('somecell.cell')
+        mycell = morty.modeling.Cell('somecell.cell')
         mycell.det_bonds()
         mycell.det_groups()
         jmol1 = JmolHandler(cell=mycell, labels=['chemgroup', 'C'])
@@ -57,7 +57,7 @@ class JmolHandler():
     Jmol draws for lithium and draw a supercell.
     First, you would want to load these files: ::
 
-        myblubb = morty.atomistic.Cell('blubb.magres')
+        myblubb = morty.modeling.Cell('blubb.magres')
 
     Now you can use a Jmol applet to plot the structure and the calculated
     tensors: ::
@@ -78,9 +78,9 @@ class JmolHandler():
 
         Parameters
         ----------
-        cell: :class:`morty.atomistic.Cell`
+        cell: :class:`morty.modeling.Cell`
             Cell to be displayed.
-        trajectory: :class:`morty.atomistic.Trajectory`
+        trajectory: :class:`morty.modeling.Trajectory`
             Trajectory to be displayed.
         labels : tuple (str, list)
             You can plot various properties on the atoms. The first argument
@@ -93,7 +93,7 @@ class JmolHandler():
             - **charges:mulliken**, **charges:hirshfeld** – Displays charges of
               the specified type.
             - **castep_bondorders** (dict) – Display the bond orders extracted
-              via :class:`morty.atomistic.Cell.load_castep_bondorders()`
+              via :class:`morty.modeling.Cell.load_castep_bondorders()`
 
             The second argument for *labels* hands over optional arguments:
 

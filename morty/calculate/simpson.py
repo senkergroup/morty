@@ -13,7 +13,7 @@ import copy
 import numpy as np
 import lmfit
 
-from ..atomistic import Spinsystem
+from ..modeling import Spinsystem
 
 
 __all__ = ['SimpsonCaller', 'SimpsonCalculation', 'SpinsystemCreator']
@@ -32,7 +32,7 @@ class SimpsonCaller:
                  simpson_executable='simpson', results=None):
         """
         Initialize the SimpsonCaller class allowing you setup a SIMPSON
-        simulation from a :class:`morty.atomistic.Spinsytem`.
+        simulation from a :class:`morty.modeling.Spinsytem`.
 
         Parameters
         ----------
@@ -101,7 +101,7 @@ class SimpsonCaller:
     def rasterize(self, subset=None, execute=False):
         """
         Write the SIMPSON input files for the provided
-        :class:`morty.atomistic.CellModeller`.
+        :class:`morty.modeling.CellModeller`.
 
         Parameters
         ----------
@@ -152,7 +152,7 @@ class SimpsonCaller:
     def write_file(self):
         """
         Write SIMPSON input files for a provided
-        :class:`morty.atomistic.Spinsystem`.
+        :class:`morty.modeling.Spinsystem`.
 
         """
         if self.spinsystem is None:
@@ -168,7 +168,7 @@ class SimpsonCaller:
     def run(self):
         """
         Run a SIMPSON calculation locally for a provided
-        :class:`morty.atomistic.Spinsystem` and read the
+        :class:`morty.modeling.Spinsystem` and read the
         results.
 
         """
@@ -386,11 +386,11 @@ class SimpsonCalculation:
 
 class SpinsystemCreator:
     """
-    Class, that can create a :class:`morty.atomistic.Spinsystem` out of a
-    :class:`morty.atomistic.Cell` instance.
+    Class, that can create a :class:`morty.modeling.Spinsystem` out of a
+    :class:`morty.modeling.Cell` instance.
 
     This class holds information about how to create a
-    :class:`morty.atomistic.Spinsystem` from a :class:`morty.atomistic.Cell`
+    :class:`morty.modeling.Spinsystem` from a :class:`morty.modeling.Cell`
     instance. It stores these information to allow for fast recurrent
     creation of spinsystems, which can be used for optimizations.
 
@@ -416,7 +416,7 @@ class SpinsystemCreator:
             into account, even if it is to a translated of the original unit
             cell. If False, the distance will be measured just within the
             original unit cell, which is to say within the coordinates as given
-            in the :class:`morty.atomistic.Cell` instance.
+            in the :class:`morty.modeling.Cell` instance.
 
         """
         self.static_atoms = tuple(atom_numbers)
@@ -529,16 +529,16 @@ class SpinsystemCreator:
 
     def create_spinsystem(self, cell):
         """
-        Creates a :class:`morty.atomistic.Spinsystem` from a given
-        :class:`morty.atomistic.Cell`.
+        Creates a :class:`morty.modeling.Spinsystem` from a given
+        :class:`morty.modeling.Cell`.
 
         Parameters
         ----------
-        cell : :class:`morty.atomistic.Cell`
+        cell : :class:`morty.modeling.Cell`
 
         Returns
         -------
-        spinsystem : :class:`morty.atomistic.Spinsystem`
+        spinsystem : :class:`morty.modeling.Spinsystem`
 
         """
         dynamic_atoms, dynamic_dd, dynamic_atom_numbers = \

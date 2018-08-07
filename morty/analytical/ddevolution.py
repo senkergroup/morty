@@ -49,7 +49,7 @@ def dd_coupling_constant(distance, gamma1, gamma2=None):
         Distance between the nuclei in m.
     gamma1 : float
         Gyromagnetic ratio (in rad/(T*s)) of the first nucleus.
-        This is usually also a `property` of an :class:`morty.atomistic.Atom`.
+        This is usually also a `property` of an :class:`morty.modeling.Atom`.
     gamma2 : float, optional
         Gyromagnetic ratio of the second nucleus. Defaults to :const:`None`, in which
         case both atoms are assumed to have the same gyromagnetic ratio.
@@ -83,7 +83,7 @@ def dist_from_dd_coupling_constant(ddcc, gamma1, gamma2):
         Distance between the nuclei in m.
     gamma1 : float
         Gyromagnetic ratio (in rad/(T*s)) of the first nucleus.
-        This is usually also a `property` of an :class:`morty.atomistic.Atom`.
+        This is usually also a `property` of an :class:`morty.modeling.Atom`.
     gamma2 : float, optional
         Gyromagnetic ratio of the second nucleus. Defaults to :const:`None`, in which
         case both atoms are assumed to have the same gyromagnetic ratio.
@@ -283,7 +283,7 @@ def redor_sum(x_axis, powder_angles, gamma_angles, myspinsystems,
         significantly smaller than the number of alpha and beta angles.
         Ignored if a set of angles is supplied
         to *powder_angles*.
-    myspinsystems : list of :class:`morty.atomistic.Spinsystem`
+    myspinsystems : list of :class:`morty.modeling.Spinsystem`
         Spinsystem instance(s) to extract the internuclear vector orientation,
         and the dipolar coupling constant from. If the list holds more than
         one element, the dipole tensors are averaged.

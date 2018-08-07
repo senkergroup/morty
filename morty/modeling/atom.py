@@ -48,12 +48,12 @@ class Atom:
 
     - **gyromagnetic_ratio** (float) – The gyromagnetic ratio of the atom.
     - **chem_group** (string) – The chemical group of the atom. Usually set by
-      :class:`morty.atomistic.Cell.det_groups()`.
+      :class:`morty.modeling.Cell.det_groups()`.
     - **charge** ({string: float, }) – Holds one pair of key:value for each charge
       scheme they are calculated, e.g 'hirshfeld' or 'mulliken'.
-    - **csatensor** (:class:`morty.atomistic.CSATensor`) – The csa tensor
+    - **csatensor** (:class:`morty.modeling.CSATensor`) – The csa tensor
       for the atom.
-    - **efgtensor** (:class:`morty.atomistic.EFGTensor`) – The quadrupolar tensor
+    - **efgtensor** (:class:`morty.modeling.EFGTensor`) – The quadrupolar tensor
       for the atom.
 
     """
@@ -74,7 +74,7 @@ class Atom:
             Basis in which the position_frac is given/will be calculated.
         properties : dict
             Optional properties for the atom. E.g.
-            'csatensor' : :class:`morty.atomistic.CSATensor`.
+            'csatensor' : :class:`morty.modeling.CSATensor`.
         nucCharge : str
             Nuclear charge of the Atom
         mass : int
@@ -113,7 +113,7 @@ class Atom:
         The result is written in ``self.properties['chem_group']`` as well as
         returned.
         Before you run this function, you will have to run
-        :class:`morty.atomistic..Cell.det_bonds()` for the class containing
+        :class:`morty.modeling..Cell.det_bonds()` for the class containing
         the atom.
 
         Notes
@@ -356,7 +356,7 @@ class Atom:
         -----
         The first neighbours of the atom have to be known before this
         function is called, i.e. you have to call
-        :class:`morty.atomistic.Cell.det_bonds()` before.
+        :class:`morty.modeling.Cell.det_bonds()` before.
 
         Parameters
         ----------
@@ -402,7 +402,7 @@ class Atom:
         Get the nuclear charge of the atom.
 
         The nuclear charge is read in e.g. using
-        :class:`morty.atomistic.Cell.load_castep_charges()`.
+        :class:`morty.modeling.Cell.load_castep_charges()`.
 
         Returns
         -------
@@ -444,7 +444,7 @@ class Atom:
         ----------
         order : int
             The order which should be checked.
-        otheratom : :class:`morty.atomistic.Atom`
+        otheratom : :class:`morty.modeling.Atom`
             The other atom to check for neighbourhood to the atom.
 
         Returns
@@ -489,7 +489,7 @@ class Atom:
         ----------
         distance : float
             The distance of the atom to the neighbour, in Å.
-        neighbour : :class:`morty.atomistic.Atom`
+        neighbour : :class:`morty.modeling.Atom`
             The neighbours instance.
         covalent : bool
             If the bond is to be handled as covalent, meaning the neighbours

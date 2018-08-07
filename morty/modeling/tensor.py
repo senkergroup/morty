@@ -319,7 +319,7 @@ class DipoleTensor(Tensor):
 
         Parameters
         ----------
-        atom1, atom2 : :class:`morty.atomistic.Atom`, optional
+        atom1, atom2 : :class:`morty.modeling.Atom`, optional
             The contributing atoms. Naturally, if you want to define the
             tensor using these atoms, you have to hand over both atoms. The
             atoms are preferred over *mytensor*.
@@ -388,7 +388,7 @@ class DipoleTensor(Tensor):
 
         Parameters
         ----------
-        atom1, atom2 : :class:`morty.atomistic.Atom`
+        atom1, atom2 : :class:`morty.modeling.Atom`
             Atoms from which the coupling tensor will be calculated.
 
         """
@@ -478,7 +478,7 @@ class EFGTensor(Tensor):
 
     Attributes
     ----------
-    atom : :class:`morty.atomistic.Atom`
+    atom : :class:`morty.modeling.Atom`
         Atom() instance for which CQ is calculated. If this is defined (as it
         is done by reading a magres file), CQ will be calculated with the
         isotope of this atom, every time it is read. If this is not set, the
@@ -542,7 +542,7 @@ class EFGTensor(Tensor):
         ----------
         tensor : np.ndarray
             If given, the tensor is set with the matrix representation.
-        atom: :class:`morty.atomistic.Atom`
+        atom: :class:`morty.modeling.Atom`
             Reference to the atom to use. CQ will be calculated according to
             its isotope.
         isotope : str

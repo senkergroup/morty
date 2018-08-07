@@ -1,6 +1,6 @@
 """
 Class to create multiple DFT simulations from a
-:class:`morty.atomistic.CellModeller` instance.
+:class:`morty.modeling.CellModeller` instance.
 
 """
 import os
@@ -13,7 +13,7 @@ class DFTCaller:
     Class to create DFT calculation files for CASTEP and GAUSSIAN.
 
     Used with a rasterized parameter setup from
-    :class:`morty.atomistic.CellModeller` to create a series of folders
+    :class:`morty.modeling.CellModeller` to create a series of folders
     with all input files required to run a DFT calculation.
 
     """
@@ -23,10 +23,10 @@ class DFTCaller:
 
         Parameters
         ----------
-        cell_modeller : :class:`morty.atomistic.CellModeller`
+        cell_modeller : :class:`morty.modeling.CellModeller`
             This instance should be set up with all parameters
             by calling
-            :class:`morty.atomistic.CellModeller.rasterize_setup()`.
+            :class:`morty.modeling.CellModeller.rasterize_setup()`.
 
         """
         self.cell_modeller = cell_modeller
@@ -35,7 +35,7 @@ class DFTCaller:
                   update_submitall=None, queue_template=None):
         """
         Create calculation folders for the parameter range set in
-        :class:`morty.atomistic.CellModeller`.
+        :class:`morty.modeling.CellModeller`.
 
         Parameters
         ----------
@@ -55,7 +55,7 @@ class DFTCaller:
             ['gaussian', 'castep'].
         queue_template : str
             If provided, a queue submission file will be created. See
-            :class:`morty.atomistic.Cell.set_up_job()` for details.
+            :class:`morty.modeling.Cell.set_up_job()` for details.
 
         Returns
         -------

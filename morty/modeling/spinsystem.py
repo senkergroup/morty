@@ -24,7 +24,7 @@ class Spinsystem:
         Parameters
         ----------
         nuclei : array_like
-            List of :class:`morty.atomistic.Atom` instances.
+            List of :class:`morty.modeling.Atom` instances.
         dipoles : list of tuples [(n1, n2, sc_f), ...]
             List of tuples handing over the indices of the two nuclei for
             featuring the dipole coupling, as well as the scaling factor to

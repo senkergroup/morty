@@ -44,7 +44,7 @@ def determine_filename(target, fileending, filename=None, foldername=None):
 
     Parameters
     ----------
-    target : :class:`morty.atomistic.Cell`
+    target : :class:`morty.modeling.Cell`
         The target cell.
     fileending : str
         The target file ending, e.g. '.cell'.

@@ -4,4 +4,4 @@ calculations, and efficiently model structures.
 
 """
 
-__all__ = ['analytical', 'atomistic', 'util', 'calculate', 'constants']
+__all__ = ['analytical', 'modeling', 'util', 'calculate', 'constants']

@@ -21,8 +21,8 @@ class CellModeller:
 
     Allows to apply various transformations to the cell. Provides an interface
     for optimizing these transformations by varying the paramters and exporting
-    atomistic.Spinsystem()s. The definition of the transformations can be
-    found in the :class:`morty.atomistic.Cell` class definition.
+    modeling.Spinsystem()s. The definition of the transformations can be
+    found in the :class:`morty.modeling.Cell` class definition.
 
     Examples
     --------
@@ -44,7 +44,7 @@ class CellModeller:
 
     Parameters
     ----------
-    cell : :class:`morty.atomistic.Cell`
+    cell : :class:`morty.modeling.Cell`
         The cell instance, with which the transformations start.
 
     Notes
@@ -320,7 +320,7 @@ class CellModeller:
             Hands over a list of testfunction to test the steps against. If the
             step yields 'True' for each testfuntion, it is accepted.
             name: The name of a function (has to be a method of
-            :class:`morty.atomistic.Cell`) or the function itself to serve as
+            :class:`morty.modeling.Cell`) or the function itself to serve as
             acceptance trigger for the steps. If a function is given, the currently
             tested step is handed over as the first arument, then the params.
             params: The parameters are handed over as a list, which is unpacked
@@ -337,9 +337,9 @@ class CellModeller:
         - in 5 steps
         you can use the rasterizer like that: ::
 
-            geom_orig = atomistic.Cell()
+            geom_orig = modeling.Cell()
             geom_orig.load_gaussian_logfile('EthanolWater.log')
-            mycellModeller = atomistic.CellModeller(geom_orig)
+            mycellModeller = modeling.CellModeller(geom_orig)
             mycellModeller.add_transformation('mod_move_atoms',
                 [[3, 4], geom_orig.get_atom(3).position_abs -
                  geom_orig.get_atom(4).position_abs],

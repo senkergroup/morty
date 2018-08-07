@@ -70,7 +70,7 @@ class Cell:
         - shielding_by_group : dict
             The shieldings of the atoms in the cell, sorted by the
             chemical group. See
-            :class:`morty.atomistic.Cell.det_shifts_by_group()`
+            :class:`morty.modeling.Cell.det_shifts_by_group()`
             for details.
 
     The `gaussian_params` dictionary holds the following keys:
@@ -471,7 +471,7 @@ class Cell:
                    ignore_atom_type=None, ignore_chemgroup=None):
         """
         Determines the chemical group for all atoms in the cell.
-        Uses the :class:`morty.atomistic.Atom.get_group()` method.
+        Uses the :class:`morty.modeling.Atom.get_group()` method.
 
         Parameters
         ----------
@@ -499,7 +499,7 @@ class Cell:
         Notes
         -----
         Bonds, and thereby neighbours, have to be determined first,
-        which can be done using the :class:`morty.atomistic.Cell.det_bonds()`.
+        which can be done using the :class:`morty.modeling.Cell.det_bonds()`.
         The groups present in the structure are determined based on the
         definitions given in a file *groups* residing in the current folder.
         A prototype of that file is found in the :class:`morty.external` folder.
@@ -623,8 +623,8 @@ class Cell:
         self.properties['shielding_by_group']. This sorting can be used to
         plot computed shifts and color them by group.
         The chemical groups have to have been determined beforehand using
-        :class:`morty.atomistic.Cell.det_bonds()` and
-        :class:`morty.atomistic.Cell.det_groups()`.
+        :class:`morty.modeling.Cell.det_bonds()` and
+        :class:`morty.modeling.Cell.det_groups()`.
 
         Parameters
         ----------
@@ -676,7 +676,7 @@ class Cell:
 
         Parameters
         ----------
-        atom1, atom2, atom3 : :class:`morty.atomistic.Atom`
+        atom1, atom2, atom3 : :class:`morty.modeling.Atom`
             Atoms between which the angle will be calculated.
 
         Returns
@@ -698,7 +698,7 @@ class Cell:
 
         Parameters
         ----------
-        atom1, atom2, atom3, atom4 : :class:`morty.atomistic.Atom`
+        atom1, atom2, atom3, atom4 : :class:`morty.modeling.Atom`
             The four atoms spanning the two axes.
 
         Returns
@@ -729,7 +729,7 @@ class Cell:
 
         Returns
         -------
-        atom : :class:`morty.atomistic.Atom`
+        atom : :class:`morty.modeling.Atom`
             The atom instance requested.
 
         """
@@ -784,9 +784,9 @@ class Cell:
         -------
         atomnumber : int
             Atomnumber with a distance lower than the specified *distance*.
-        newatom : :class:`morty.atomistic.Atom`
+        newatom : :class:`morty.modeling.Atom`
             Translated atom as returned by
-            :class:`morty.atomistic.Cell.get_shortest_distance()`.
+            :class:`morty.modeling.Cell.get_shortest_distance()`.
         connection vector : np.ndarray
             The vector connecting atom1 and the translated atom2.
 
@@ -879,7 +879,7 @@ class Cell:
 
         Returns
         -------
-        atom : list of :class:`morty.atomistic.Atom`
+        atom : list of :class:`morty.modeling.Atom`
             The atom instance requested.
 
         """
@@ -998,7 +998,7 @@ class Cell:
 
         Parameters
         ----------
-        atom1, atom2, atom3, atom4 : :class:`morty.atomistic.Atom`
+        atom1, atom2, atom3, atom4 : :class:`morty.modeling.Atom`
             Atoms, between which the angle will be calculated.
 
         Returns
@@ -1026,7 +1026,7 @@ class Cell:
 
         Parameters
         ----------
-        atom1, atom2 : :class:`morty.atomistic.Atom`
+        atom1, atom2 : :class:`morty.modeling.Atom`
             Atoms, between which the distance will be calculated.
 
         Returns
@@ -1047,7 +1047,7 @@ class Cell:
 
         Parameters
         ----------
-        atomset1 : array of :class:`morty.atomistic.Atom`
+        atomset1 : array of :class:`morty.modeling.Atom`
             List of atoms, for which the distance to `atomset2` should be
             evaluated.
         atomset2 : array
@@ -1060,7 +1060,7 @@ class Cell:
         -------
         distances : list of [(atom1, (atom2, translatedPosition), distance)]
             Array of all possible distances with information about the atoms.
-            *atom1* and *atom2* are :class:`morty.atomistic.Atom` instances,
+            *atom1* and *atom2* are :class:`morty.modeling.Atom` instances,
             *translatedPosition* is the (possibly translated) vector of the
             *atom2* (*atom1* is always kept fixed) and *distance* is the
             distance in meters.
@@ -1117,7 +1117,7 @@ class Cell:
 
         Parameters
         ----------
-        atom : :class:`morty.atomistic.Atom` or int
+        atom : :class:`morty.modeling.Atom` or int
             An instance of atom, or the absolute atom number.
 
         Returns
@@ -1145,12 +1145,12 @@ class Cell:
 
         Parameters
         ----------
-        atomset1 : list of :class:`morty.atomistic.Atom`
+        atomset1 : list of :class:`morty.modeling.Atom`
             The atomset representing the receiving sort of atom.
             E.g. for 1H-13C CP, this will be C. The second moments are
             averaged over this set. All atoms in this set must have the same
             `atom_type`.
-        atomset2 : list of :class:`morty.atomistic.Atom`
+        atomset2 : list of :class:`morty.modeling.Atom`
             The atomset representing the transferring sort of atom.
             For 1H-13C CP, this will be H. All atoms in this set must have the
             same `atom_type`.
@@ -1198,7 +1198,7 @@ class Cell:
         Assume you have a cell and want to calculate the 1H->13C second moments
         for a 3x3x3 supercell and aromatic carbons. ::
 
-            mycell = atomistic.Cell('myexample.cell')
+            mycell = modeling.Cell('myexample.cell')
             mycell.mod_put_atoms_into_cell()
             mycell.det_bonds()
             mycell.det_groups()
@@ -1281,7 +1281,7 @@ class Cell:
 
         Parameters
         ----------
-        atom1, atom2 : :class:`morty.atomistic.Atom`
+        atom1, atom2 : :class:`morty.modeling.Atom`
         returnnewatom2 : boolean
             If :const:`True`, a copy of `atom2` is returned, with updated coordinates
             respecting the translation yielding the shortest distance.
@@ -1290,7 +1290,7 @@ class Cell:
         -------
         distance : float
             Returns the shortest distance between the two specified atoms.
-        atom2 : :class:`morty.atomistic.Atom`
+        atom2 : :class:`morty.modeling.Atom`
             The second atom; if `returnnewatom2`==:const:`True`, the atom is shifted to the
             respective quadrant.
         distance_vector : array
@@ -1345,7 +1345,7 @@ class Cell:
     def get_supercell_atom_offset(self, position, supercell_size):
         """
         Returns the offset of an atom created by
-        :class:`morty.atomistic.Cell.mod_make_supercell()`.
+        :class:`morty.modeling.Cell.mod_make_supercell()`.
 
         Parameters
         ----------
@@ -1610,7 +1610,7 @@ class Cell:
         `castep_cellfile_additions`, as well as linear constraints.
         This info is not understood by castep and just appended if you
         write a cell file with
-        :class:`morty.atomistic.Cell.save_castep()`.
+        :class:`morty.modeling.Cell.save_castep()`.
 
         Parameters
         ----------
@@ -2317,7 +2317,7 @@ class Cell:
     def load_gyromagnetic_ratios(self):
         """
         Reads in the gyromagnetic ratios for each atom. See
-        :class:`morty.atomistic.Atom.get_gyromagnetic_ratio()`
+        :class:`morty.modeling.Atom.get_gyromagnetic_ratio()`
 
         """
         for myatom in self.atoms:
@@ -2378,7 +2378,7 @@ class Cell:
 
         Parameters
         ----------
-        atom : :class:`morty.atomistic.Atom`
+        atom : :class:`morty.modeling.Atom`
 
         myfunction : list of [function, params, bool]
             A function determining how the new atom is created.
@@ -2395,13 +2395,13 @@ class Cell:
         handed over to the respective function `fun`.
         This function comes in handy if you want to automatically build
         models via a rastering mechanism like
-        :class:`morty.atomistic.CellModeller` using custom rules.
+        :class:`morty.modeling.CellModeller` using custom rules.
 
         Parameters
         ----------
         fun : callable
             A function determining how the new atom is created. This function
-            must return a :class:`morty.atomistic.Atom` instance.
+            must return a :class:`morty.modeling.Atom` instance.
         params1 : list
             A set of parameters for `fun`.
 
@@ -2409,17 +2409,17 @@ class Cell:
         -----
         There are certain rules to obey when defining the function, which will
         become important once you use a `CellModeller` with *mod* functions.
-        See the documentation of :class:`morty.atomistic.CellModeller` for instructions.
+        See the documentation of :class:`morty.modeling.CellModeller` for instructions.
         A good starting point to see how the function works is given in the
-        example. Or have a look at :class:`morty.atomistic.Cell.mod_make_nx()`
+        example. Or have a look at :class:`morty.modeling.Cell.mod_make_nx()`
 
         Examples
         --------
         First you will want to define a function to add the atom. Say you
         want to add an Xe at [0, 0, 0]. ::
 
-            from morty.atomistic import Atom
-            from morty.atomistic import Cell
+            from morty.modeling import Atom
+            from morty.modeling import Cell
             import numpy as np
             def my_func(target, my_atom_type, abs_coord, num):
                 return Atom(basis=target.lattice_cart,
@@ -3103,7 +3103,7 @@ class Cell:
         You would first set up a cell. Optionally, you can change some of
         the parameters, or specify a multi-step job. ::
 
-            geom_orig = atomistic.Cell('myexample.log')
+            geom_orig = modeling.Cell('myexample.log')
             geom_orig.gaussian_params = {
                             'folder': "./CALCS/",
                              'basis_set': "6-31++G**",
