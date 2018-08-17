@@ -9,8 +9,15 @@ import os
 import shutil
 import platform
 import itertools
-import IPython.core.display
-from IPython.core.display import HTML
+
+# we keep this module optional
+try:
+    import IPython.core.display
+    from IPython.core.display import HTML
+except ImportError:
+    import warnings
+    warnings.warn('IPython not available. Cannot display JSmol.', RuntimeWarning)
+
 import numpy as np
 from .. import constants
 
