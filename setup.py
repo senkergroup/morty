@@ -1,10 +1,6 @@
 import os
 from setuptools import setup, Extension
 import numpy
-from Cython.Build import cythonize
-
-#USE_CYTHON = True
-#ext = '.pyx' if USE_CYTHON else '.c'
 
 external_files = []
 os.chdir('morty')
