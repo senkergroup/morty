@@ -15,7 +15,7 @@
 import os
 import sys
 from sphinx.ext.napoleon.docstring import NumpyDocstring
-sys.path.insert(0, os.path.abspath('../code/'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
