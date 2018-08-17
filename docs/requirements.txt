@@ -1,3 +1,5 @@
 sphinxcontrib-bibtex >= 0.3.6
 numpy >= 1.8
 scipy >= 0.11
+lmfit >= 0.9.7
+
