@@ -1,0 +1,41 @@
+tt.descname {
+  font-size : 1em;
+}
+
+blockquote {
+	border-left : 2px solid #eeeeee;
+}
+
+.container {
+  width: 80%;
+}
+
+.highlighted {
+	background-color : rgb(220, 220, 220);
+}
+
+.main {
+  background-color: white;
+  padding: 18px;
+  -moz-box-shadow: 0 0 3px #888;
+  -webkit-box-shadow: 0 0 3px #888;
+  border: 2px solid rgb(150, 150, 150);
+  box-shadow: 0px 0px 10px 8px rgb(220, 220, 220);
+}
+
+
+/* Styling for the headers */
+div#spc-section-body h1, h2, h3, h4, h5, h6{
+	margin-bottom: 0.75em;
+	margin-top: 1em;
+	word-wrap: break-word;
+}
+div#spc-section-body h1 { font-size: 200%; font-weight: bold; text-shadow: .15em .15em .2em rgb(220, 220, 220);}
+div#spc-section-body h2 { font-size: 160%; font-weight: bold; color: #101074; border-bottom: 1.5px solid #ccc;
+						  text-shadow: .1em .1em .15em rgb(230, 230, 230); }
+div#spc-section-body h3 { font-size: 120%; color: #362A13; border-bottom: 1px solid #ccc; width: 39.7%; line-height: 25px;}
+div#spc-section-body h4 { font-size: 110%; }
+div#spc-section-body h5 { font-size: 100%; }
+div#spc-section-body h6 { font-size: 100%; }
+
+.py-class, .py-obj {color: rgb(0, 140, 30)}
