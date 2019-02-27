@@ -1,4 +1,4 @@
-morty.atomistic
+morty.modeling
 ===============
 
 .. automodule:: morty.modeling
