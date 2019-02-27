@@ -19,7 +19,7 @@ First, please install numpy and scipy:
 
 Then install morty:
 
-    pip3 install git+https://github.com/carstenblt/morty.git
+    pip3 install git+https://github.com/senkergroup/morty.git
 
 Citing morty
 ============

@@ -777,7 +777,7 @@ class Spectrum2D(Spectrum):
         return self.spc if self.spc_c is None else self.spc_c
 
     def __getitem__(self, boundary):
-        if isinstance(boundary[0], Ppm) and isinstance(boundary[1], Ppm):
+        if isinstance(boundary[0], Ppm):
             if boundary[0].high_ppm is None:
                 high_ppm_index_f2 = 0
             else:
@@ -789,7 +789,10 @@ class Spectrum2D(Spectrum):
                 low_ppm_index_f2 = find_nearest_index_by_value(
                     self.axis_f2, boundary[0].low_ppm, 'higher')
             index_f2 = slice(high_ppm_index_f2, low_ppm_index_f2)
+        else:
+            index_f2 = boundary[0]
 
+        if isinstance(boundary[1], Ppm):
             if boundary[1].high_ppm is None:
                 high_ppm_index_f1 = 0
             else:
@@ -801,13 +804,12 @@ class Spectrum2D(Spectrum):
                 low_ppm_index_f1 = find_nearest_index_by_value(
                     self.axis_f1, boundary[1].low_ppm, 'higher')
             index_f1 = slice(high_ppm_index_f1, low_ppm_index_f1)
-
-            return (self.spc[index_f2, index_f1] if self.spc_c is None
-                    else self.spc_c[index_f2, index_f1])
-
         else:
-            return (self.spc[boundary] if self.spc_c is None
-                    else self.spc_c[boundary])
+            index_f1 = boundary[1]
+
+        return (self.spc[index_f2, index_f1] if self.spc_c is None
+                else self.spc_c[index_f2, index_f1])
+
 
     def integrate(self, limit1, limit2):
         """
@@ -862,21 +864,18 @@ class Spectrum2D(Spectrum):
             Degree of the polynom used to fit the baseline.
 
         """
-        f2range = [(find_nearest_index_by_value(self.axis_f2, f2range[i][1], 'higher'),
-                    find_nearest_index_by_value(self.axis_f2, f2range[i][0], 'lower'))
-                   for i in range(len(f2range))]
-        f1range = [(find_nearest_index_by_value(self.axis_f1, f1range[i][1], 'higher'),
-                    find_nearest_index_by_value(self.axis_f1, f1range[i][0], 'lower'))
-                   for i in range(len(f1range))]
-
         self.base = np.zeros((
             len(self.spc[:, 0]), len(self.spc[0, :])))
 
         xfit = []
-        for myrange in [list(range(from_range, to_range
-                                   if to_range is not None else len(self.spc[:, 0])))
-                        for from_range, to_range in f2range]:
-            xfit.extend(myrange)
+        for myrange in f2range:
+            if isinstance(myrange, tuple):
+                xfit.extend(list(range(myrange[0], myrange[1] if myrange[1] is not None
+                                       else len(self.spc[:, 0]))))
+            if isinstance(myrange, Ppm):
+                xfit.extend(list(range(np.where(self[myrange, 0][0] == self[:, 0])[0][0],
+                                       np.where(self[myrange, 0][-1] == self[:, 0])[0][0]))
+                           )
 
         # fit in f2 dimension
         for i in range(0, len(self.spc[0])):
@@ -890,10 +889,13 @@ class Spectrum2D(Spectrum):
         # spc_c for the fit, add the fit to base and redefine spc_c
         if f1range is not None:
             xfit = []
-            for myrange in [list(range(from_range, to_range
-                                       if to_range is not None else len(self.spc[0, :])))
-                            for from_range, to_range in f1range]:
-                xfit.extend(myrange)
+            for myrange in f1range:
+                if isinstance(myrange, tuple):
+                    xfit.extend(list(range(myrange[0], myrange[1] if myrange[1] is not None
+                                           else len(self.spc[0, :]))))
+                if isinstance(myrange, Ppm):
+                    xfit.extend(list(range(np.where(self[0, myrange][0] == self[0, :])[0][0],
+                                           np.where(self[0, myrange][-1] == self[0, :])[0][0])))
 
             for i in range(0, len(self.spc[:, 0])):
                 myfit = np.poly1d(np.polyfit(xfit, self.spc_c[i, xfit], deg))

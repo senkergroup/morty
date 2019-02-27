@@ -342,9 +342,8 @@ def csa(axis, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
     # -.5 * aniso * (1 - asym) * z1 * sinphi**2 + aniso * z_phi[:, 0]**2)
 
     step_size = abs(axis[0] - axis[1])
-    # todo speed up!
     temp = np.empty((len(axis), len(z_phi)))
-    np.subtract(axis[np.newaxis].T, omega_calc, out=temp)
+    np.subtract(axis[np.newaxis].T - iso, omega_calc, out=temp)
     np.absolute(temp, out=temp)
     np.divide(temp, step_size, out=temp)
     np.subtract(1, temp, out=temp)
