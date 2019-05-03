@@ -269,7 +269,7 @@ class Trajectory:
         stepno = 0
 
         for line in file:
-            line = line.strip()
+            line = line.replace("\x00"," ").strip()
             if 'begin header' in line.lower():
                 headermarker = 1
                 continue
