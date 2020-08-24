@@ -949,6 +949,9 @@ class SpectrumPseudo2D(Spectrum):
     vd_list : list
         If the object is initialized with `load_vd` = True, the vd (delay length)
         list will be saved to this variable.
+    vc_list : listt
+        If the object is initialized with `load_vc` = True, the vc (counter)
+        list will be saved to this variable.
 
     Notes
     -----
@@ -959,7 +962,7 @@ class SpectrumPseudo2D(Spectrum):
 
     """
     def __init__(self, folder, procno=1, load_vd=False, load_vp=False,
-                 num_experiments=None, everynth=(0, 1)):
+                 load_vc=False, num_experiments=None, everynth=(0, 1)):
         """
         Set up an instance of a Pseudo2D Spectrum.
 
@@ -969,9 +972,13 @@ class SpectrumPseudo2D(Spectrum):
             Path of the bruker experiment folder.
         procno : int
             Number of measurement inside the given folder.
-        loadVD : bool
-            Load a VD list used in the experiment, if it exists.
-        numExperiments: int
+        load_vd : bool
+            Load a vd (variable delay) list used in the experiment, if it exists.
+        load_vp : bool
+            Load a vp (variable pulse) list used in the experiment, if it exists.
+        load_vc : bool
+            Load a vc (variable counter) list used in the experiment, if it exists.
+        num_experiments: int
             The number of experiments to read in. Topspin only create datasets
             with a length of multiples of 2, so there will be experiments at
             the end which are actually empty.
@@ -995,6 +1002,10 @@ class SpectrumPseudo2D(Spectrum):
                                     dtype=np.float)[everynth[0]::everynth[1]]
         if load_vp is True:
             self.vp_list = np.array(open(os.path.join(folder, 'vplist')
+                                        ).read().splitlines(),
+                                    dtype=np.float)[everynth[0]::everynth[1]]
+        if load_vc is True:
+            self.vc_list = np.array(open(os.path.join(folder, 'vclist')
                                         ).read().splitlines(),
                                     dtype=np.float)[everynth[0]::everynth[1]]
         self.base = None
