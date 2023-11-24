@@ -48,8 +48,7 @@ extensions = [
     'sphinx.ext.autosummary',
 #    'numpydoc',
     'sphinx.ext.napoleon',
-    'sphinxcontrib.bibtex',
-    'sphinx_rtd_theme'
+    'sphinxcontrib.bibtex'
 
 ]
 napoleon_numpy_docstring = True
@@ -117,7 +116,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 #html_theme = 'scipy'
 #html_theme_path = ['_theme']
 
