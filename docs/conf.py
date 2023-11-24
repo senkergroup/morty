@@ -46,9 +46,11 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.autosummary',
-#    'numpydoc'
+#    'numpydoc',
     'sphinx.ext.napoleon',
-    'sphinxcontrib.bibtex'
+    'sphinxcontrib.bibtex',
+    'sphinx_rtd_theme'
+
 ]
 napoleon_numpy_docstring = True
 napoleon_google_docstring = False
@@ -62,7 +64,6 @@ def parse_attributes_section(self, section):
 NumpyDocstring._parse_attributes_section = parse_attributes_section
 
 def skip_member(app, what, name, obj, skip, options):
-    return True
     exclusions = ('class', 'exception', 'function')
     exclude = what in exclusions
     exclude_np = 'all' in name
@@ -100,7 +101,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -123,13 +124,6 @@ html_theme = 'sphinx_rtd_theme'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-# html_theme_options = {}
-html_context = {
-    'css_files': [
-        '_static/table_fix.css',  # overrides for wide tables in RTD theme
-        ],
-    }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -187,6 +181,7 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+bibtex_bibfiles = ['..\morty\external\literature.bib']
 
 # -- Options for todo extension ----------------------------------------------
 
