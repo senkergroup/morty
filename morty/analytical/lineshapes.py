@@ -28,7 +28,7 @@ def pseudovoigt(x_axis, iso, sigma, gamma, intensity, eta):
         the respective signal.
     sigma : float
         FWHM of gaussian line.
-    gamma : float
+    gamma : float, optional
         FWHM of the Lorentzian line. If you wish to plot a PsV with the same
         fwhm for Gaussian and Lorentzian shape, you can just omit gamma.
     intensity : float
@@ -42,6 +42,9 @@ def pseudovoigt(x_axis, iso, sigma, gamma, intensity, eta):
         Pseudo Voigt Profile for given params of same length as s_axis.
 
     """
+    if gamma is None:
+        gamma = sigma
+
     return (intensity * (eta * np.exp(
         -0.69314718055994529 * 4 * ((x_axis - iso) / sigma) ** 2) +
                          (1 - eta) * (1 / (1 + 4 * ((x_axis - iso) /
@@ -100,6 +103,11 @@ def pseudovoigt_sum(x_axis, iso, sigma, gamma, intensity, eta):
         Array of amplitudes.
     eta : array
         Mixing parameter for Gaussian and Lorentzian shape. (0-1)
+    
+    Returns
+    -------
+    sum : np.ndarray
+        Sum of all Pseudo Voigt functions.
 
     """
     return np.sum((pseudovoigt(x_axis, iso[i], sigma[i], gamma[i],

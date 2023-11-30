@@ -8,7 +8,7 @@ import itertools
 import numpy as np
 from numpy.polynomial import legendre
 import scipy.linalg
-from scipy.ndimage.filters import gaussian_filter1d
+from scipy.ndimage import gaussian_filter1d
 from ..util import wigner
 from ..util import euler_to_spherical
 
@@ -32,10 +32,28 @@ def zcw(num_angles, spherical=True):
 
     Returns
     -------
-    alpha, beta : float
-        Euler or spherical angles in radians.
-    weighting : float
-        Weighting.
+    angles : np.ndarray
+        Array of the shape (i, 3), with i being the smallest number of the
+        Fibonacci sequence that is equal or higher than num_angles. The first two columns
+        are the Euler or spherical angles alpha and beta in radians, the third column is the weighting.
+    
+    Examples
+    --------
+    Calculate 4 powder angles in euler coordinates. ::
+
+        zcw(4, spherical=False)
+    
+    this returns ::
+
+        array([[ 0.314159, 0.      , 0.309017],
+               [ 0.942478, 2.51327 , 0.809017],
+               [ 1.5708  , 5.02655 , 1.      ],
+               [ 2.19911 , 1.25664 , 0.809017],
+               [ 2.82743 , 3.76991 , 0.309017]
+    
+    Note that the array has 5 rows, as the next higher Fibonacci number to 4 is 5.
+                       
+    
 
     """
 
@@ -53,7 +71,7 @@ def zcw(num_angles, spherical=True):
                 angles[angle, 0], angles[angle, 1], 0)
     return angles
 
-
+#is this still needed, or is it obsolete due to intermediate_csa_lineshape?
 def intermediate_csa_lineshape_legacy(dwell, fid_size, rate_mat, sites,
                                powder_angles=1000, lb=.1e3):
     """
@@ -71,7 +89,7 @@ def intermediate_csa_lineshape_legacy(dwell, fid_size, rate_mat, sites,
         A tuple of sites, each containing (anisotropy, asymmetry, alpha, beta,
         gamma, probability). Alpha, beta and gamma are the Euler angles
         describing the relative orientation of the jump sites.
-    powder_angles : int
+    powder_angles : int, optional
         Number of zcw powder angles used. Something between 500 and 20.000 is
         reasonable, depending on linebroadening, anisotropy and asymmetry.
 
@@ -177,7 +195,9 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
         describing the relative orientation of the jump sites.
     deg : int, optional
         Degree of Legendre polynomial used for the Gaussian quadrature
-        integration.
+        integration (default: 30).
+    lb : float, optional
+
 
     Returns
     -------
@@ -193,7 +213,7 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
     Two-site jump with an anisotropy of 3 kHz, asymmetry of 0.5, a jump rate
     of 1 kHz and a jump angle of 90°. ::
 
-        csa_motion_fid(100e-6, 128, np.array([[-1, 1], [1, -1]]) * 1e3,
+        intermediate_csa_lineshape(100e-6, 128, np.array([[-1, 1], [1, -1]]) * 1e3,
                        ((tensor, 1),
                         (tensor2, 1)))
 
@@ -201,6 +221,7 @@ def intermediate_csa_lineshape(dwell, fid_size, rate_mat, sites,
     sampling = legendre.leggauss(deg)
     z_phi = np.array(list(itertools.product(.5 * (sampling[0] + 1), math.pi / 4 * (sampling[0] + 1))))
     sum_weighting = np.prod(list(itertools.product(sampling[1], sampling[1])), axis=1)
+    #this constructs a diagonal nxn matrix with n = len(sites) and the linebroadening in the diagonal
     lb = np.diag([lb] * len(sites))
     omegas = np.zeros((len(sites), len(sites)), dtype=np.complex)
     time_axis = np.arange(0, fid_size * dwell, dwell)
@@ -237,16 +258,17 @@ def exsy(axis, tensors, deg=50, population=None, mode='sum'):
         Tuple of (3x3) matrices representing the tensors.
     deg : int, optional
         Degree of Legendre polynomial used for the Gaussian quadrature
-        integration.
+        integration (default: 50).
     population : np.ndarray
         Population of the included tensors. Same length as `tensors`.
     mode : string, optional
-        If 'sum', diagonal and cross intensity is summed up. If 'cross', only
+        If 'sum' (default), diagonal and cross intensity is summed up. If 'cross', only
         cross intensity is returned.
 
     Returns
     -------
     spectrum : np.ndarray
+        The calculated 2D spectrum.
 
     """
     start, end = min(axis), max(axis)
@@ -309,15 +331,20 @@ def csa(axis, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
     asym : float
         Asymmetry.
     iso : float, optional
-        Isotropic shift.
+        Isotropic shift (default: 0).
     lb : float, optional
-        Gaussian linebroadening in ppm/hertz.
+        Gaussian linebroadening in ppm/hertz (default: 1).
     deg : int, optional
         Degree of Legendre polynomial to use for the Gaussian quadrature
-        integration. Depending on linebroadening and asymmetry, values
+        integration (default: 100). Depending on linebroadening and asymmetry, values
         between 50 and 150 are reasonable.
     scaling : float, optional
-        Scale the result.
+        Scale the result (default 1).
+
+    Returns
+    -------
+    spectrum : np.ndarray
+        The calculated spectrum.
 
     """
     sampling = legendre.leggauss(deg)
@@ -360,6 +387,7 @@ def csa(axis, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
     return lorentz_filtered / max(lorentz_filtered) * scaling
 
 
+#is this still needed, or is it obsolete due to csa?
 def csa_legacy(omegas, aniso, asym, iso=0, lb=1, gb=1, powder_angles=1000, scaling=1):
     """
     Calculates a CSA lineshape.
@@ -386,6 +414,11 @@ def csa_legacy(omegas, aniso, asym, iso=0, lb=1, gb=1, powder_angles=1000, scali
         angles yourself.
     scaling : float
         Scale the result.
+
+    Returns
+    -------
+    spectrum : np.ndarray
+        The calculated spectrum.
 
     Examples
     --------
