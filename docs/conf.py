@@ -65,6 +65,7 @@ NumpyDocstring._parse_attributes_section = parse_attributes_section
 def skip_member(app, what, name, obj, skip, options):
     exclusions = ('class', 'exception', 'function')
     exclude = what in exclusions
+    exclude = exclude or (name.startswith('__') and name != '__init__')
     exclude_np = 'all' in name
     return skip or exclude or exclude_np
 
