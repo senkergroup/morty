@@ -56,7 +56,7 @@ def dd_coupling_constant(distance, gamma1, gamma2=None):
 
     Returns
     -------
-    b : float
+    d : float
         Coupling constant in rad/s.
 
     """
@@ -79,14 +79,19 @@ def dist_from_dd_coupling_constant(ddcc, gamma1, gamma2):
 
     Parameters
     ----------
-    r : float
-        Distance between the nuclei in m.
+    ddcc : float
+        Coupling constant in rad/s.
     gamma1 : float
         Gyromagnetic ratio (in rad/(T*s)) of the first nucleus.
         This is usually also a `property` of an :class:`morty.modeling.Atom`.
     gamma2 : float, optional
         Gyromagnetic ratio of the second nucleus. Defaults to :const:`None`, in which
         case both atoms are assumed to have the same gyromagnetic ratio.
+    
+    Returns
+    -------
+    r : float
+        Distance between the nuclei in m.
 
     """
     if gamma2 is None:
@@ -287,14 +292,19 @@ def redor_sum(x_axis, powder_angles, gamma_angles, myspinsystems,
         Spinsystem instance(s) to extract the internuclear vector orientation,
         and the dipolar coupling constant from. If the list holds more than
         one element, the dipole tensors are averaged.
-    dipole_scaling_factor : float
-        Scale all occuring dipole couplings by the supplied scaling factor. Does D*f.
-    i_atomset_2 : float
+    dipole_scaling_factor : float, optional
+        Scale all occuring dipole couplings by the supplied scaling factor (default: 1). Does D*f.
+    i_atomset_2 : float, optional
         Sets the total angular momentum quantum number of the S nucleus. Defaults to 1/2.
     f1 : list of floats
         Correction factor for the dipole couplings for all states, accounts for imperfect π pulses.
         Say I_S = 3/2, you supply [0.9] to scale m_l = -3/2, 3/2 by 0.9. 1/2 will
         not be scaled.
+
+    Returns
+    -------
+    redor : np.ndarray
+        REDOR difference signal.
 
     """
     f1 = np.array(f1)
