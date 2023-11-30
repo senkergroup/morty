@@ -25,6 +25,13 @@ class Ppm:
     When accessing data from any Spectrum object, you can supply a
     `Ppm` instance instead of :class:`slice`.
 
+    Attributes
+    ----------
+    high_ppm : float
+        The upper bound of the range.
+    low_ppm : float
+        The lower bound of the range.
+
     Examples
     --------
     Use with Spectrum1D to define a range you want to display. E.g. ::
@@ -391,6 +398,10 @@ class Spectrum1D(Spectrum):
     proc_pars_f2 : dict
         Holds information about the processed spectrum, e.g. the frequency
         scale.
+    dim : int
+        The dimension of the spectrum. Since this class handles 1D spectra, this should be 1
+    base : np.ndarray
+        The calculated baseline of the spectrum. This is only set after a baseline correction has been performed.
 
     Notes
     -----
@@ -436,7 +447,7 @@ class Spectrum1D(Spectrum):
             The baseline corrected spectrum to use. Usually this is only
             constructed when the baseline correction is performed with
             `morty`.
-        acqu_pars : dict
+        acqu_pars : dict, optional
             TOPSPIN aquisition parameters.
         axis_f2 : :class:`morty.analytical.SpectrumAxis`, optional
             The F2 axis to use.
@@ -512,7 +523,7 @@ class Spectrum1D(Spectrum):
         will use a range from 120 to 80 and from 0 to -30 ppm. ::
 
             myspec = Spectrum1D(myfolder)
-            myspec.baseline(f2range=[Ppm(120, 80), (0, -30)])
+            myspec.baseline(f2range=[Ppm(120, 80), Ppm(0, -30)])
 
         """
 
@@ -569,7 +580,7 @@ class Spectrum1D(Spectrum):
 
         Parameters
         ----------
-        int_range : :class:`slice(min:max)` or :class:`morty.analytical.Ppm`
+        int_range : :class:`slice(min:max)` or :class:`morty.analytical.Ppm`, optional
             F2 range for the integration. If None, the whole spectrum is
             integrated.
 
@@ -610,7 +621,7 @@ class Spectrum1D(Spectrum):
             *expr*, the parameter names are prefixed by a character indicating
             which signal it belongs to, e.g. parameters of the first signal are
             prefixed by 'a', the second by 'b' and so on.
-        minimizer : 'nelder', 'lbfgsb', 'powell', 'cg', 'newton', ...
+        minimizer : 'nelder', 'lbfgsb', 'powell', 'cg', 'newton', ..., optional
             Use another minimizer algorithm. See
             http://lmfit.github.io/lmfit-py/fitting.html#fit-methods-table for
             available options. A Levenberg-Marquardt will always be executed
@@ -705,6 +716,10 @@ class Spectrum2D(Spectrum):
         e.g. the frequency scale.
     proc_pars_f2 : dict
         Same as `proc_pars_f1`, but for the F2 dimension.
+    dim : int
+        The dimension of the spectrum. Since this class handles 2D spectra, this should be 2.
+    base : np.ndarray
+        The calculated baseline of the spectrum. This is only set after a baseline correction has been performed.
 
     Notes
     -----
@@ -733,22 +748,25 @@ class Spectrum2D(Spectrum):
         """
         Set up an instance of a 2D Spectrum.
 
+        The 2D spectrum can be constructed either by providing the TOPSPIN
+        measurement folder from which to read or can be constructed using
+        explicit data. Usually a user would supply the path of the folder.
 
         Parameters
         ----------
-        folder : str
+        folder : str, optional
             Path of the bruker experiment folder.
-        procno : int
+        procno : int, optional
             Number of measurement inside the given folder.
-        spc : array
+        spc : array, optional
             If supplied, the object will be initialized with data from `spc`,
             `spc_c`, `proc_pars_f2`, `proc_pars_f1` and `acqu_pars`. This is
             useful when creating copies of existing Spectrum2D instances, but
             is not needed usually.
-        proc_pars_f2 : dict
-        proc_pars_f1 : dict
-        spc_c : array
-        acqu_pars : dict
+        proc_pars_f2 : dict, optional
+        proc_pars_f1 : dict, optional
+        spc_c : array, optional
+        acqu_pars : dict, optional
 
         """
         if spc is None and folder is not None:
@@ -845,8 +863,8 @@ class Spectrum2D(Spectrum):
         Baseline correction for the spectrum.
 
         Performs a polynomial fit to the spectrum and saves a corrected
-        spectrum to `Spectrum1D.spc_c` and the polynom function used as a
-        basis in `Spectrum1D.base`.
+        spectrum to `Spectrum2D.spc_c` and the polynom function used as a
+        basis in `Spectrum2D.base`.
 
         Parameters
         ----------
@@ -952,6 +970,8 @@ class SpectrumPseudo2D(Spectrum):
     vc_list : listt
         If the object is initialized with `load_vc` = True, the vc (counter)
         list will be saved to this variable.
+    base : np.ndarray
+        The calculated baseline of the spectrum. This is only set after a baseline correction has been performed.
 
     Notes
     -----
@@ -1106,6 +1126,8 @@ class SpectrumPseudo2D(Spectrum):
 
     def integrate_deconvoluted(self, signals, spc_slice=None, start_spc=0,
                                minimizer=None):
+        
+        #does this return intensities or integrals?
         """
         Deconvolutes and integrates a pseudo 2D spectrum.
 
@@ -1114,7 +1136,7 @@ class SpectrumPseudo2D(Spectrum):
 
         Parameters
         ----------
-        signals : list of list of tuples
+        signals : tuple of tuples of tuples
             For each signal to be fitted, a list of the parameters *iso*,
             *sigma*, *gamma*, *intensity* and *eta* has to be supplied in the
             form ::
