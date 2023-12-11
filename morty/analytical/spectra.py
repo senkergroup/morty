@@ -147,10 +147,10 @@ class Spectrum:
         # F2 axis
         # Note the endpoint=False.
         self.axis_f2 = SpectrumAxis(np.linspace(
-            np.float(self.proc_pars_f2['OFFSET']),
-            np.float(self.proc_pars_f2['OFFSET']) -
-            np.float(self.proc_pars_f2['SW_p']) /
-            np.float(self.proc_pars_f2['SF']),
+            float(self.proc_pars_f2['OFFSET']),
+            float(self.proc_pars_f2['OFFSET']) -
+            float(self.proc_pars_f2['SW_p']) /
+            float(self.proc_pars_f2['SF']),
             np.uint(self.proc_pars_f2['SI']), endpoint=False))
 
         # load (optional) F1 parameters and the 1D/2D spectrum
@@ -192,10 +192,10 @@ class Spectrum:
 
             if (self.proc_pars_f1['OFFSET'] != '0') and (generic_f1 is False):
                 self.axis_f1 = SpectrumAxis(np.linspace(
-                    np.float(self.proc_pars_f1['OFFSET']),
-                    np.float(self.proc_pars_f1['OFFSET']) -
-                    np.float(self.proc_pars_f1['SW_p']) /
-                    np.float(self.proc_pars_f1['SF']),
+                    float(self.proc_pars_f1['OFFSET']),
+                    float(self.proc_pars_f1['OFFSET']) -
+                    float(self.proc_pars_f1['SW_p']) /
+                    float(self.proc_pars_f1['SF']),
                     np.uint(self.proc_pars_f1['SI']), endpoint=False))
             else:
                 self.axis_f1 = SpectrumAxis(
@@ -463,10 +463,10 @@ class Spectrum1D(Spectrum):
             self.acqu_pars = acqu_pars
             if axis_f2 is None:
                 self.axis_f2 = SpectrumAxis(np.linspace(
-                    np.float(self.proc_pars_f2['OFFSET']),
-                    np.float(self.proc_pars_f2['OFFSET']) -
-                    np.float(self.proc_pars_f2['SW_p']) /
-                    np.float(self.proc_pars_f2['SF']),
+                    float(self.proc_pars_f2['OFFSET']),
+                    float(self.proc_pars_f2['OFFSET']) -
+                    float(self.proc_pars_f2['SW_p']) /
+                    float(self.proc_pars_f2['SF']),
                     np.uint(self.proc_pars_f2['SI']), endpoint=False))
             else:
                 self.axis_f2 = axis_f2
@@ -778,17 +778,17 @@ class Spectrum2D(Spectrum):
             self.dim = 2
             self.acqu_pars = acqu_pars
             self.axis_f2 = SpectrumAxis(np.linspace(
-                np.float(self.proc_pars_f2['OFFSET']),
-                np.float(self.proc_pars_f2['OFFSET']) -
-                np.float(self.proc_pars_f2['SW_p']) /
-                np.float(self.proc_pars_f2['SF']),
+                float(self.proc_pars_f2['OFFSET']),
+                float(self.proc_pars_f2['OFFSET']) -
+                float(self.proc_pars_f2['SW_p']) /
+                float(self.proc_pars_f2['SF']),
                 np.uint(self.proc_pars_f2['SI']), endpoint=False))
             self.proc_pars_f1 = proc_pars_f1
             self.axis_f1 = SpectrumAxis(np.linspace(
-                np.float(self.proc_pars_f1['OFFSET']),
-                np.float(self.proc_pars_f1['OFFSET']) -
-                np.float(self.proc_pars_f1['SW_p']) /
-                np.float(self.proc_pars_f1['SF']),
+                float(self.proc_pars_f1['OFFSET']),
+                float(self.proc_pars_f1['OFFSET']) -
+                float(self.proc_pars_f1['SW_p']) /
+                float(self.proc_pars_f1['SF']),
                 np.uint(self.proc_pars_f1['SI']), endpoint=False))
 
     def __array__(self):
@@ -1019,15 +1019,15 @@ class SpectrumPseudo2D(Spectrum):
         if load_vd is True:
             self.vd_list = np.array(open(os.path.join(folder, 'vdlist')
                                         ).read().splitlines(),
-                                    dtype=np.float)[everynth[0]::everynth[1]]
+                                    dtype=float)[everynth[0]::everynth[1]]
         if load_vp is True:
             self.vp_list = np.array(open(os.path.join(folder, 'vplist')
                                         ).read().splitlines(),
-                                    dtype=np.float)[everynth[0]::everynth[1]]
+                                    dtype=float)[everynth[0]::everynth[1]]
         if load_vc is True:
             self.vc_list = np.array(open(os.path.join(folder, 'vclist')
                                         ).read().splitlines(),
-                                    dtype=np.float)[everynth[0]::everynth[1]]
+                                    dtype=float)[everynth[0]::everynth[1]]
         self.base = None
 
     def __getitem__(self, index):
