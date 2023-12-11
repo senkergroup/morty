@@ -9,7 +9,10 @@ Documentation is available at https://morty.readthedocs.io
 
 Requirements
 ============
-Morty works with Python >= 3.5, Numpy >= 1.8 and SciPy >= 0.11.
+Morty works with:
+- Python >= 3.9
+- Numpy  >= 1.20
+- SciPy  >= 1.11
 
 Installation
 ============
