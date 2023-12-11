@@ -71,7 +71,7 @@ def zcw(num_angles, spherical=True):
                 angles[angle, 0], angles[angle, 1], 0)
     return angles
 
-#is this still needed, or is it obsolete due to intermediate_csa_lineshape?
+#TODO Is this still needed, or is it obsolete due to intermediate_csa_lineshape?
 def intermediate_csa_lineshape_legacy(dwell, fid_size, rate_mat, sites,
                                powder_angles=1000, lb=.1e3):
     """
