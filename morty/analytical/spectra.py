@@ -1127,7 +1127,7 @@ class SpectrumPseudo2D(Spectrum):
     def integrate_deconvoluted(self, signals, spc_slice=None, start_spc=0,
                                minimizer=None):
         
-        #does this return intensities or integrals?
+        #TODO Does this return intensities or integrals?
         """
         Deconvolutes and integrates a pseudo 2D spectrum.
 
