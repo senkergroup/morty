@@ -16,6 +16,6 @@ setup(
     #ext_modules=cythonize(Extension('morty.analytical.exsy_csa', sources=['morty/analytical/exsy_csa' + ext], include_dirs=[numpy.get_include()])),
     packages=('morty', 'morty.analytical', 'morty.modeling', 'morty.calculate', 'morty.util'),
     package_data={'morty' : external_files},
-    requires=['numpy (>=1.8)', 'scipy (>=0.11)'],
-    python_requires='>=3.5'
+    requires=['numpy (>=1.20)', 'scipy (>=1.11)'],
+    python_requires='>=3.9'
 )
