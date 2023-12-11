@@ -387,7 +387,7 @@ def csa(axis, aniso, asym, iso=0, lb=1, gb=1, deg=100, scaling=1):
     return lorentz_filtered / max(lorentz_filtered) * scaling
 
 
-#is this still needed, or is it obsolete due to csa?
+#TODO Is this still needed, or is it obsolete due to csa?
 def csa_legacy(omegas, aniso, asym, iso=0, lb=1, gb=1, powder_angles=1000, scaling=1):
     """
     Calculates a CSA lineshape.
