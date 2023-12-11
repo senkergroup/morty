@@ -1,6 +1,7 @@
 import os
 from setuptools import setup, Extension
 import numpy
+import morty
 
 external_files = []
 os.chdir('morty')
@@ -10,6 +11,7 @@ os.chdir(os.pardir)
 
 setup(
     name='morty',
+    version=morty.__version__,
     maintainer='Carsten Tschense',
     maintainer_email='carsten.tschense@uni-bayreuth.de',
     description='Molecular modelling and NMR toolkit for Python',
