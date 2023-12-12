@@ -24,6 +24,10 @@ Then install morty:
 
     pip3 install git+https://github.com/senkergroup/morty.git
 
+If error occurs during pip install wheel build, try:
+
+    pip3 install wheel setuptools pip --upgrade
+
 Citing morty
 ============
 A manuscript is in preparation.
