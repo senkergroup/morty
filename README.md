@@ -13,6 +13,7 @@ Morty works with:
 - Python >= 3.9
 - Numpy  >= 1.20
 - SciPy  >= 1.11
+- LMFIT  >= 1.2
 
 Installation
 ============
