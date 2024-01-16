@@ -5,4 +5,4 @@ calculations, and efficiently model structures.
 """
 
 __all__ = ['analytical', 'modeling', 'util', 'calculate', 'constants']
-__version__ = '1.0.1'
+__version__ = '1.0.2'
