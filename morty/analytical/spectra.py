@@ -127,6 +127,7 @@ class Spectrum:
 
         path = os.path.join(folder, 'pdata', str(procno))
 
+        self.name = None
         self.spc_c = None
         self.base = None
 
