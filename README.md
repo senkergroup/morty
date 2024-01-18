@@ -29,6 +29,10 @@ If error occurs during pip install wheel build, try:
 
     pip3 install wheel setuptools pip --upgrade
 
+UPGRADE morty with:
+
+    pip install -U --force-reinstall git+https://github.com/senkergroup/morty.git
+
 Citing morty
 ============
 A manuscript is in preparation.
