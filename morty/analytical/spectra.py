@@ -297,9 +297,9 @@ class Spectrum:
         If you wanted to add a second Pseudo-Voigt signal with identical FWHM
         and Gauss/Lorentz ratio, you'd use ::
 
-            ('sigma', 1, True, .1, 3, 'bsigma'),
-            ('gamma', 1, True, .1, 3, 'bgamma'),
-            ('eta', .5, True, 0, 1, 'beta')
+            ('sigma', 1, True, .1, 3, '2sigma'),
+            ('gamma', 1, True, .1, 3, '2gamma'),
+            ('eta', .5, True, 0, 1, '2eta')
 
         in its `params` value.
 
@@ -336,7 +336,7 @@ class Spectrum:
             # We encode the number of function as a character, starting with a.
             # This is due to the fact, that parameters/variables cannot start
             # with a number.
-            pars.add_many(*tuple((chr(97 + i) + functions[i]['params'][j][0],
+            pars.add_many(*tuple((str(i) + functions[i]['params'][j][0],
                                   functions[i]['params'][j][1],
                                   functions[i]['params'][j][2],
                                   functions[i]['params'][j][3],
@@ -652,9 +652,9 @@ class Spectrum1D(Spectrum):
                         ('eta', .5, True, 0, 1, None),
                         ('intensity', 1, True, 0.1, 1.1, None)),
                        (('iso', 10, True, 9, 11, None),
-                        ('sigma', 1, True, .5, 2, 'asigma'),
-                        ('gamma', 1, True, .5, 2, 'agamma'),
-                        ('eta', .5, True, 0, 1, 'aeta'),
+                        ('sigma', 1, True, .5, 2, '1sigma'),
+                        ('gamma', 1, True, .5, 2, '1gamma'),
+                        ('eta', .5, True, 0, 1, '1eta'),
                         ('intensity', 1, True, 0.1, 1.1, None))
             Spectrum1D.integrate_deconvoluted(my_spc.spc / max(my_spc.spc),
                                               my_spc.axis_f2, signals)
