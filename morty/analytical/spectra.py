@@ -421,7 +421,7 @@ class Spectrum1D(Spectrum):
     You can easily read in a TOPSPIN folder and plot the 1D: ::
 
         myspc = Spectrum1D('myfolder')
-        plot(myspc.axisF2, mySpc)
+        plot(myspc.axisf2, mySpc)
 
     """
 
