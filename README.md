@@ -19,7 +19,7 @@ Installation
 ============
 First, please install numpy and scipy:
 
-    pip3 install numpy scipy
+    pip3 install numpy scipy lmfit
 
 Then install morty:
 
