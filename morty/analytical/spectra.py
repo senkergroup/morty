@@ -17,7 +17,7 @@ from ..util import find_nearest_index_by_value
 
 __all__ = ['Spectrum1D', 'Spectrum2D', 'SpectrumPseudo2D', 'SpectrumAxis', 'Ppm']
 
-
+#TODO realise a list of PPMs or tuples so multiple PPMs is easier
 class Ppm:
     """
     Data type that can be used to specify a range/value in ppm.
