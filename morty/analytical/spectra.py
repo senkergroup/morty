@@ -127,9 +127,12 @@ class Spectrum:
 
         path = os.path.join(folder, 'pdata', str(procno))
 
-        self.name = None
-        self.spc_c = None
+
         self.base = None
+        self.color = None
+        self.name = None
+        self.path = None
+        self.spc_c = None
 
         # load F2 parameters
         self.dim = 1
@@ -336,12 +339,12 @@ class Spectrum:
             # We encode the number of function as a character, starting with a.
             # This is due to the fact, that parameters/variables cannot start
             # with a number.
-            pars.add_many(*tuple((str(i) + functions[i]['params'][j][0],
-                                  functions[i]['params'][j][1],
-                                  functions[i]['params'][j][2],
-                                  functions[i]['params'][j][3],
-                                  functions[i]['params'][j][4],
-                                  functions[i]['params'][j][5])
+            pars.add_many(*tuple(('s' + str(i) + functions[i]['params'][j][0],
+                                                 functions[i]['params'][j][1],
+                                                 functions[i]['params'][j][2],
+                                                 functions[i]['params'][j][3],
+                                                 functions[i]['params'][j][4],
+                                                 functions[i]['params'][j][5])
                                  for j in range(len(functions[i]['params']))))
 
         # this functions calls each supplied function with the given parameters
@@ -356,7 +359,7 @@ class Spectrum:
             for i, myfunction in enumerate(functions):
                 deviation -= myfunction['function'](
                     **dict({myfunction['params'][j][0]:
-                            my_args[chr(97 + i) + myfunction['params'][j][0]]
+                            my_args['s' + str(i) + myfunction['params'][j][0]]
                             for j in range(len(myfunction['params']))},
                            **functions[i]['kwargs']))
             return deviation
@@ -371,11 +374,11 @@ class Spectrum:
         results, uncert = [None] * len(functions), [None] * len(functions)
         for i in range(len(functions)):
             results[i] = {functions[i]['params'][j][0]:
-                          opt.params[chr(97 + i) +
+                          opt.params['s' + str(i) +
                                      functions[i]['params'][j][0]].value
                           for j in range(len(functions[i]['params']))}
             uncert[i] = {functions[i]['params'][j][0]:
-                         opt.params[chr(97 + i) +
+                         opt.params['s' + str(i) +
                                     functions[i]['params'][j][0]].stderr
                          for j in range(len(functions[i]['params']))}
         return results, uncert, opt
@@ -536,13 +539,17 @@ class Spectrum1D(Spectrum):
                 xfit.extend(list(range(myrange[0], myrange[1] if myrange[1] is not None
                                        else len(self.spc))))
             if isinstance(myrange, Ppm):
-                xfit.extend(list(range(np.where(self[myrange][0] == self[:])[0][0],
-                                       np.where(self[myrange][-1] == self[:])[0][0]))
+                xfit.extend(list(range(np.argmin(np.abs(self.axis_f2 - myrange.high_ppm)),
+                                       np.argmin(np.abs(self.axis_f2 - myrange.low_ppm))))
                            )
 
-        myfit = np.poly1d(np.polyfit(xfit, self.spc[xfit], deg))
+        # Fit the baseline
+        myfit = np.polynomial.Polynomial.fit(xfit, self.spc[xfit], deg)
+        
+        # Calculate and set the baseline values
         self.base = myfit(np.linspace(0, len(self.spc) - 1, len(self.spc)))
-
+        
+        #Substract the baseline from the spectrum
         self.spc_c = self.spc - self.base
 
     def baseline_subtract_measurement(self, spectrum_bg, scaling=1):
@@ -652,9 +659,9 @@ class Spectrum1D(Spectrum):
                         ('eta', .5, True, 0, 1, None),
                         ('intensity', 1, True, 0.1, 1.1, None)),
                        (('iso', 10, True, 9, 11, None),
-                        ('sigma', 1, True, .5, 2, '1sigma'),
-                        ('gamma', 1, True, .5, 2, '1gamma'),
-                        ('eta', .5, True, 0, 1, '1eta'),
+                        ('sigma', 1, True, .5, 2, 's1sigma'),
+                        ('gamma', 1, True, .5, 2, 's1gamma'),
+                        ('eta', .5, True, 0, 1, 's1eta'),
                         ('intensity', 1, True, 0.1, 1.1, None))
             Spectrum1D.integrate_deconvoluted(my_spc.spc / max(my_spc.spc),
                                               my_spc.axis_f2, signals)
