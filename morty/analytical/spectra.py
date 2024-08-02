@@ -383,6 +383,59 @@ class Spectrum:
                          for j in range(len(functions[i]['params']))}
         return results, uncert, opt
 
+    @staticmethod
+    def deconvolute_multiple_1d(spc_list, functions, linked_params, minimizer=None):
+        # Initialize a Parameters object to hold all parameters for the fit
+        all_params = lmfit.Parameters()
+
+        # Modify functions for each spc, adding unique parameter names
+        for i, spc in enumerate(spc_list):
+            for func_dict in functions:
+                params = func_dict['params']
+
+                for name, start, vary, min, max, expr in params:
+                    # Determine the parameter prefix
+                    prefix = 'S0_' if name in linked_params else f'S{i}_'
+                    param_name = prefix + name
+
+                    # Add the parameter in the all_params object
+                    if param_name not in all_params:
+                        all_params.add(param_name, value=start, vary=vary, min=min, max=max, expr=expr)
+
+        # Prepare the objective function for fitting
+        def objective(params, spc_list, functions):
+            # Initialize an empty list to hold residuals for all datasets
+            residuals = []
+
+            for i, spc in enumerate(spc_list):
+                # Construct the model for this dataset
+                model = np.zeros_like(spc)
+
+                for func_dict in functions:
+                    func = func_dict['function']
+                    func_params = func_dict['params']
+                    kwargs = func_dict.get('kwargs', {}).copy()
+
+                    # Update kwargs with the current values of the parameters
+                    for name, _, _, _, _, _ in func_params:
+                        prefix = 'S0_' if name in linked_params else f'S{i}_'
+                        param_name = prefix + name
+                        kwargs[name] = params[param_name].value
+
+                    # Add the function's contribution to the model
+                    model += func(**kwargs)
+
+                # Add the residuals for this dataset to the list
+                residuals.extend(spc - model)
+
+            return residuals
+
+        # Perform the fit
+        result = lmfit.minimize(objective, all_params, args=(spc_list, functions), method=minimizer)
+
+        return result
+
+
 
 class Spectrum1D(Spectrum):
     """
