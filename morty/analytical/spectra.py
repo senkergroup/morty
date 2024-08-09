@@ -236,12 +236,12 @@ class Spectrum:
                     optimize the parameter if False, *min* and *max* are the
                     boundaries and *expr* can be used to apply non-linear
                     constraints (see lmfit documentation). Be aware the
-                    parameter names are prefixed with a character, to be able
+                    parameter names are prefixed with numbers, to be able
                     to access parameters of other functions used. That is, the
-                    first function is prefixed by 'a', the second by 'b' and so
+                    first function is prefixed by 's0', the second by 's1' and so
                     on. If you want the parameter fwhm of first function to be
                     twice that of the second function, you'd have to set expr
-                    to '2*bfwhm'.
+                    to '2*s1fwhm'.
                 - kwargs : dict
                     Static arguments that are given to the function. Please
                     note that you have to supply the x axis to your function
@@ -357,10 +357,12 @@ class Spectrum:
             my_args = arguments.valuesdict()
             deviation = np.copy(spc)
             for i, myfunction in enumerate(functions):
+                #myfunction is called with the parameters in params
+                #a dict with the parameters is created and unpacked
                 deviation -= myfunction['function'](
                     **dict({myfunction['params'][j][0]:
                             my_args['s' + str(i) + myfunction['params'][j][0]]
-                            for j in range(len(myfunction['params']))},
+                            for j in range(5)}, #len(myfunction['params'])
                            **functions[i]['kwargs']))
             return deviation
 
@@ -671,17 +673,20 @@ class Spectrum1D(Spectrum):
         axis : array_like
             Spectrum axis.
         signals : tuple of tuples of tuples
-            For each signal to be fitted, a list of the parameters *iso*,
-            *sigma*, *gamma*, *intensity* and *eta* has to be supplied in the
-            form ::
+            Tuples with starting values and boundaries as required by lmfit have to be supplied::
 
                 (('parameter', start_value, vary, min, max, expr), ...)
 
             where *vary* must be True, if the parameter is to be optimized and
             *expr* can be used to use shared parameters (see example). When using
-            *expr*, the parameter names are prefixed by a character indicating
+            *expr*, the parameter names are prefixed by a number indicating
             which signal it belongs to, e.g. parameters of the first signal are
-            prefixed by 'a', the second by 'b' and so on.
+            prefixed by 's0', the second by 's1' and so on.
+            For each signal to be fitted, the parameters *iso*,
+            *sigma*, *gamma*, *intensity* and *eta* have to be supplied. Other 
+            additional parameters can be added. These don't directly affect 
+            the fit, but can be used to set mathematical constraints using the *expr* value.
+            
         minimizer : 'nelder', 'lbfgsb', 'powell', 'cg', 'newton', ..., optional
             Use another minimizer algorithm. See
             http://lmfit.github.io/lmfit-py/fitting.html#fit-methods-table for
@@ -718,6 +723,24 @@ class Spectrum1D(Spectrum):
                         ('intensity', 1, True, 0.1, 1.1, None))
             Spectrum1D.integrate_deconvoluted(my_spc.spc / max(my_spc.spc),
                                               my_spc.axis_f2, signals)
+                                              
+        Using mathematical constraints, it is also possible to fit multiple peaks 
+        with unknown positions while ensuring they don't overlap: ::
+        
+            signals = ((('iso', 5, True, 1, 10, None),
+                        ('sigma', 1, True, .5, 2, None),
+                        ('gamma', 1, True, .5, 2, None),
+                        ('eta', .5, True, 0, 1, None),
+                        ('intensity', 1, True, 0.1, 1.1, None)),
+                       (('iso', 10, True, 1, 10, 's0iso+s1delta'),
+                        ('sigma', 1, True, .5, 2, None),
+                        ('gamma', 1, True, .5, 2, None),
+                        ('eta', .5, True, 0, 1, None),
+                        ('intensity', 1, True, 0.1, 1.1, None),
+                        ('delta', 2, True, 0.1, 10, None))
+                        
+        Here, an additional parameter *delta* is added to the second signal, which
+        is used to shift the position of the second signal by the value of *delta*.
 
         """
         functions = [{'function': pseudovoigt,
@@ -1188,7 +1211,6 @@ class SpectrumPseudo2D(Spectrum):
     def integrate_deconvoluted(self, signals, spc_slice=None, start_spc=0,
                                minimizer=None):
         
-        #TODO Does this return intensities or integrals?
         """
         Deconvolutes and integrates a pseudo 2D spectrum.
 
@@ -1198,17 +1220,20 @@ class SpectrumPseudo2D(Spectrum):
         Parameters
         ----------
         signals : tuple of tuples of tuples
-            For each signal to be fitted, a list of the parameters *iso*,
-            *sigma*, *gamma*, *intensity* and *eta* has to be supplied in the
-            form ::
+            Tuples with starting values and boundaries as required by lmfit have to be supplied::
 
                 [('parameter', start_value, vary, min, max, expr), ...]
 
             where vary must be True, if the parameter is to be optimized and
             expr can be used to use shared parameters (see example). When using
-            expr, the parameter names are prefixed by a character indicating
+            expr, the parameter names are prefixed by a number indicating
             which signal it belongs to, e.g. parameters of the first signal are
-            prefixed by 'a', the second by 'b' and so on.
+            prefixed by 's0', the second by 's1' and so on.
+            For each signal to be fitted, the parameters *iso*,
+            *sigma*, *gamma*, *intensity* and *eta* have to be supplied. Other 
+            additional parameters can be added. These don't directly affect 
+            the fit, but can be used to set mathematical constraints using the *expr* value.
+            
         spc_slice : :class:`slice` or :class:`morty.analytical.Ppm`
             If set, fitting will only be performed in this range.
         start_spc : int
