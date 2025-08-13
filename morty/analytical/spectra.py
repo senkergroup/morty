@@ -9,6 +9,7 @@ import math
 import os
 import numpy as np
 import lmfit
+import inspect
 
 from . import pseudovoigt
 from . import pseudovoigt_integral
@@ -220,7 +221,7 @@ class Spectrum:
         ----------
         spc : array
             The intensity values of the spectrum. Since this is a static
-            method,  you can use this on any data.
+            method, you can use this on any data.
         functions : array of dict
             Each dictionary has the following keys:
 
@@ -239,9 +240,20 @@ class Spectrum:
                     parameter names are prefixed with numbers, to be able
                     to access parameters of other functions used. That is, the
                     first function is prefixed by 's0', the second by 's1' and so
-                    on. If you want the parameter fwhm of first function to be
-                    twice that of the second function, you'd have to set expr
-                    to '2*s1fwhm'.
+                    on.
+
+                    To enforce increasing iso values, you can use a delta parameter as a factor:
+                        ('iso', 5, True, 1, 10, None),
+                        ('delta', 2, True, 0.1, 10, None),
+                        ('iso', 10, True, 1, 10, 's0iso+s1delta')
+                    This will ensure the second iso is always offset by delta from the first.
+
+                    To constrain integrals between peaks, use the integral parameter with an expr:
+                        ('integral', r, False, False, f, 's0integral')
+                    The penalty will enforce the ratio r (0 not allowed) of the peaks and/or
+                    equality of integrals as specified by f. The expression for the penalty is as follows:
+                        penalty = penalty_factor * (integral_i - ratio * integral_ref) ** 2
+
                 - kwargs : dict
                     Static arguments that are given to the function. Please
                     note that you have to supply the x axis to your function
@@ -251,11 +263,11 @@ class Spectrum:
                         'kwargs' : {'xaxis' : my_axis}
 
         minimizer : {'nelder', 'lbfgsb', 'powell', 'cg', 'newton', ...}
-            Use another minimizer algorithm. See the `lmfit homepage \
+            Use another minimizer algorithm. See the `lmfit homepage
             <http://lmfit.github.io/lmfit-py/fitting.html#fit-methods-table>`_
             for available options. A Levenberg-Marquardt will always be
             executed afterwards, since it is the only algorithm that yields
-            uncertainties. If not set, a single Levenberg-Marquardt	run will be
+            uncertainties. If not set, a single Levenberg-Marquardt run will be
             performed.
 
         Returns
@@ -266,7 +278,6 @@ class Spectrum:
             Uncertainties of the fitted parameters.
         opt : :class:`lmfit.Minimizer`
             The minimizer object, that holds all information about the fitting.
-
         Examples
         --------
         Fit a spectrum with a CSA and a pseudo-voigt function: ::
@@ -289,7 +300,7 @@ class Spectrum:
                                          ('sigma', 1, True, .1, 3, None),
                                          ('gamma', 1, True, .1, 3, None),
                                          ('eta', .5, True, 0, 1, None),
-                                         ('intensity', 1, True, .2, 1.1)),
+                                         ('intensity', 1, True, .2, 1.1, None)),
                              'kwargs' : {'x_axis' : my_spc.axis_f2[Ppm(300,
                                                                    -100)]}
                             }])
@@ -300,9 +311,9 @@ class Spectrum:
         If you wanted to add a second Pseudo-Voigt signal with identical FWHM
         and Gauss/Lorentz ratio, you'd use ::
 
-            ('sigma', 1, True, .1, 3, '2sigma'),
-            ('gamma', 1, True, .1, 3, '2gamma'),
-            ('eta', .5, True, 0, 1, '2eta')
+            ('sigma', 1, True, .1, 3, 's2sigma'),
+            ('gamma', 1, True, .1, 3, 's2gamma'),
+            ('eta', .5, True, 0, 1, 's2eta')
 
         in its `params` value.
 
@@ -315,6 +326,37 @@ class Spectrum:
                     for x in opt[0])))
 
         assuming that you wrote the result to `opt`.
+        
+        Fit a spectrum with two pseudo-Voigt peaks, where the second peak's iso is always offset by delta from the first,
+        and the integrals are constrained to be equal:
+
+            functions = [
+                {'function': morty.analytical.pseudovoigt,
+                'params': (
+                    ('iso', 5, True, 1, 10, None),
+                    ('sigma', 1, True, .5, 2, None),
+                    ('gamma', 1, True, .5, 2, None),
+                    ('eta', .5, True, 0, 1, None),
+                    ('intensity', 1, True, 0.1, 1.1, None),
+                ),
+                'kwargs': {'x_axis': my_axis}
+                },
+                {'function': morty.analytical.pseudovoigt,
+                'params': (
+                    ('iso', 10, True, 1, 10, 's0iso+s1delta'),
+                    ('sigma', 1, True, .5, 2, None),
+                    ('gamma', 1, True, .5, 2, None),
+                    ('eta', .5, True, 0, 1, None),
+                    ('intensity', 1, True, 0.1, 1.1, None),
+                    ('delta', 2, True, 0.1, 10, None),
+                    ('integral', 0, False, False, 1e3, 's0integral')
+                ),
+                'kwargs': {'x_axis': my_axis}
+                }
+            ]
+
+        This will fit two peaks, enforce that the second iso is always offset by delta from the first,
+        and penalize the fit if the integrals are not equal.
 
         Important properties can be accessed in `opt[2].chisqr` (Chi square),
         `opt[2].success` (if fit converged) and `opt[2].residual`.
@@ -324,8 +366,15 @@ class Spectrum:
 
         Notes
         -----
-        Be careful when using only one function or parameter: (10) is equal to
-        10 and can not be iterated. Use (10,).
+        - Be careful when using only one function or parameter: (10) is equal to
+          10 and can not be iterated. Use (10,).
+        - Use the 'delta' parameter and an expr in 'iso' to enforce increasing iso values.
+        - Use the 'integral' parameter with an expr to constrain integrals between peaks.
+        - Only one 'integral' parameter with an expr is needed for each pair; the penalty
+          is applied automatically.
+        - The penalty factor (second to last value in the tuple) controls the strength of
+          the constraint.
+        - The ratio (second value in the tuple) can be used to enforce proportional integrals.
 
         Also, it is up to you if you work with a normalized spectrum or not. In
         general it is more convenient to divide the spectrum by its largest
@@ -334,56 +383,91 @@ class Spectrum:
 
         """
         # write Parameters() object with renamed parameter names
-        pars = lmfit.Parameters()
-        for i in range(len(functions)):
-            # We encode the number of function as a character, starting with a.
-            # This is due to the fact, that parameters/variables cannot start
-            # with a number.
-            pars.add_many(*tuple(('s' + str(i) + functions[i]['params'][j][0],
-                                                 functions[i]['params'][j][1],
-                                                 functions[i]['params'][j][2],
-                                                 functions[i]['params'][j][3],
-                                                 functions[i]['params'][j][4],
-                                                 functions[i]['params'][j][5])
-                                 for j in range(len(functions[i]['params']))))
+        fit_parameters = lmfit.Parameters()
 
-        # this functions calls each supplied function with the given parameters
-        # and calculates the total deviation
+        # Add all parameters (including all s{i}integral) without special handling
+        # Add only real fit parameters (skip 'integral' with expr)
+        for i, func in enumerate(functions):
+            param_tuples = [
+                (f's{i}{p[0]}', p[1], p[2], p[3], p[4], p[5])
+                for p in func['params']
+                if not (p[0].endswith('integral') and p[5] is not None)
+            ]
+            fit_parameters.add_many(*param_tuples)
+
+        # Build penalty pairs for integrals referencing another integral
+        penalty_pairs = []
+        for i, func in enumerate(functions):
+            for param in func['params']:
+                if param[0].endswith('integral') and param[5] is not None:
+                    expr = param[5]
+                    if isinstance(expr, str) and expr.startswith('s') and expr.endswith('integral'):
+                        ref_idx = int(expr[1:-8])
+                        # Only add penalty if not already referenced (avoid double penalty)
+                        if (i, ref_idx) not in penalty_pairs and (ref_idx, i) not in penalty_pairs:
+                            penalty_factor = param[-2] if param[-2] is not None else 1e3
+                            ratio = param[1] if param[1] is not None else 1
+                            if param[1] == 0:
+                                raise ValueError(f"A ratio between integrals should differ from 0 (signal index {i}).")
+                            if (i, ref_idx) not in penalty_pairs and (ref_idx, i) not in penalty_pairs:
+                                penalty_pairs.append((i, ref_idx, penalty_factor, ratio))
+                            
+        def calculate_integral(intensity, eta, sigma, gamma):
+            return intensity * (eta * (sigma / 2) * 2.1289340388624525 +
+                                (1 - eta) * gamma * 1.5707963267948966)
+
+#TODO: FIX the problem, that integral is needed in the base
+# at some time remove fixed pseudovoigt_integral and implement transfered integral in parameter
+
         def complete_deviation(arguments, spc, functions):
-            """
-            Function that returns the deviation, used by the optimizer.
-
-            """
             my_args = arguments.valuesdict()
             deviation = np.copy(spc)
+            integrals = []
             for i, myfunction in enumerate(functions):
-                #myfunction is called with the parameters in params
-                #a dict with the parameters is created and unpacked
-                deviation -= myfunction['function'](
-                    **dict({myfunction['params'][j][0]:
-                            my_args['s' + str(i) + myfunction['params'][j][0]]
-                            for j in range(5)}, #len(myfunction['params'])
-                           **functions[i]['kwargs']))
+                intensity = my_args.get(f's{i}intensity')
+                eta = my_args.get(f's{i}eta')
+                sigma = my_args.get(f's{i}sigma')
+                gamma = my_args.get(f's{i}gamma')
+                if None not in (intensity, eta, sigma, gamma):
+                    integral = calculate_integral(intensity, eta, sigma, gamma)
+                    integrals.append(integral)
+                else:
+                    integrals.append(None)
+
+            # Add penalty for each referenced integral with its penalty factor and ratio
+            penalty = 0
+            for i, ref_idx, penalty_factor, ratio in penalty_pairs:
+                if integrals[i] is not None and integrals[ref_idx] is not None:
+                    penalty += penalty_factor * (integrals[i] - ratio * integrals[ref_idx]) ** 2
+
+            # Calculate the fit deviation
+            for i, myfunction in enumerate(functions):
+                func = myfunction['function']
+                param_dict = {name: my_args[f's{i}{name}']
+                              for name in inspect.signature(func).parameters
+                              if f's{i}{name}' in my_args}
+                deviation -= func(**dict(param_dict, **myfunction['kwargs']))
+ 
+            deviation = np.append(deviation, penalty)
+            
             return deviation
 
         # Use another minimizer first, if requested.
         if minimizer is not None:
-            premin = lmfit.minimize(complete_deviation, pars,
-                                    args=(spc, functions), method=minimizer)
-            pars = premin.params
-        opt = lmfit.minimize(complete_deviation, pars, args=(spc, functions))
+            premin = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions), method=minimizer)
+            fit_parameters = premin.params
+        opt = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions))
 
+        # Extract results and uncertainties
         results, uncert = [None] * len(functions), [None] * len(functions)
-        for i in range(len(functions)):
-            results[i] = {functions[i]['params'][j][0]:
-                          opt.params['s' + str(i) +
-                                     functions[i]['params'][j][0]].value
-                          for j in range(len(functions[i]['params']))}
-            uncert[i] = {functions[i]['params'][j][0]:
-                         opt.params['s' + str(i) +
-                                    functions[i]['params'][j][0]].stderr
-                         for j in range(len(functions[i]['params']))}
+        for i, func in enumerate(functions):
+            param_names = [name for name in inspect.signature(func['function']).parameters
+                       if f's{i}{name}' in opt.params]
+            results[i] = {name: opt.params[f's{i}{name}'].value for name in param_names}
+            uncert[i] = {name: opt.params[f's{i}{name}'].stderr for name in param_names}
+            
         return results, uncert, opt
+
 
     @staticmethod
     def deconvolute_multiple_1d(spc_list, functions, linked_params, minimizer=None):
@@ -975,8 +1059,8 @@ class Spectrum2D(Spectrum):
                 xfit.extend(list(range(myrange[0], myrange[1] if myrange[1] is not None
                                        else len(self.spc[:, 0]))))
             if isinstance(myrange, Ppm):
-                xfit.extend(list(range(np.where(self[myrange, 0][0] == self[:, 0])[0][0],
-                                       np.where(self[myrange, 0][-1] == self[:, 0])[0][0]))
+                xfit.extend(list(range(np.argmin(np.abs(self.axis_f2 - myrange.high_ppm)),
+                                       np.argmin(np.abs(self.axis_f2 - myrange.low_ppm))))
                            )
 
         # fit in f2 dimension
@@ -996,8 +1080,9 @@ class Spectrum2D(Spectrum):
                     xfit.extend(list(range(myrange[0], myrange[1] if myrange[1] is not None
                                            else len(self.spc[0, :]))))
                 if isinstance(myrange, Ppm):
-                    xfit.extend(list(range(np.where(self[0, myrange][0] == self[0, :])[0][0],
-                                           np.where(self[0, myrange][-1] == self[0, :])[0][0])))
+                    xfit.extend(list(range(np.argmin(np.abs(self.axis_f1 - myrange.high_ppm)),
+                                        np.argmin(np.abs(self.axis_f1 - myrange.low_ppm))))
+                            )
 
             for i in range(0, len(self.spc[:, 0])):
                 myfit = np.poly1d(np.polyfit(xfit, self.spc_c[i, xfit], deg))

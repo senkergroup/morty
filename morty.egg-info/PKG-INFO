@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: morty
+Version: 1.0.2
+Summary: Molecular modelling and NMR toolkit for Python
+Maintainer: Carsten Tschense
+Maintainer-email: carsten.tschense@uni-bayreuth.de
+Requires: numpy (>=1.20)
+Requires: scipy (>=1.11)
+Requires-Python: >=3.9
+License-File: LICENSE
