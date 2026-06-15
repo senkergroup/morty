@@ -54,6 +54,39 @@ class Ppm:
         """
         self.high_ppm = high_ppm
         self.low_ppm = low_ppm
+        
+    @classmethod
+    def from_list(cls, values): 
+        """
+        Create a list of Ppm objects from a flat list of boundaries.
+
+        Parameters
+        ----------
+        values : list
+            A flat list of ppm boundaries, e.g. [100, 10, 50, -50].
+
+        Returns
+        -------
+        list
+            A list of Ppm objects created from the input values.
+
+        Examples
+        --------
+        
+        >>> boundaries = [100, 10, 50, -50]
+        >>> ppm_ranges = Ppm.from_list(boundaries)
+        >>> print(ppm_ranges)
+        [Ppm(100, 10), Ppm(50, -50)]
+
+        Raises
+        ------
+        ValueError
+            If the length of the input list is not divisible by 2.
+
+        """
+        if len(values) % 2 != 0:
+            raise ValueError("Ppm classes from list: Length must be divisible by 2.")
+        return [cls(values[i], values[i+1]) for i in range(0, len(values), 2)]
 
 
 class SpectrumAxis(np.ndarray):
@@ -89,6 +122,47 @@ class Spectrum:
     Meta class for NMR spectra. Do not use.
 
     All other spectrum classes inherit this.
+
+    Attributes
+    ----------
+    acqu_pars : dict
+        Acquisition parameters loaded from the TOPSPIN folder (e.g., frequency offsets, pulse programs).
+    proc_pars_f2 : dict
+        Processed parameters for the F2 dimension (e.g., spectral width, offset, size).
+    proc_pars_f1 : dict, optional
+        Processed parameters for the F1 dimension (for 2D spectra).
+    axis_f2 : SpectrumAxis
+        The F2 axis in ppm.
+    axis_f1 : SpectrumAxis, optional
+        The F1 axis in ppm (for 2D spectra).
+    spc : np.ndarray
+        The raw spectrum data, as read from the TOPSPIN folder.
+    spc_c : np.ndarray, optional
+        The baseline-corrected spectrum, set after baseline correction or background subtraction.
+    base : np.ndarray, optional
+        The calculated baseline of the spectrum, set after baseline correction.
+    color : str, optional
+        Color to use when plotting the spectrum.
+    name : str, optional
+        Name of the spectrum (can be set by the user or inferred from the folder).
+    mass : float, optional
+        The mass of the sample, if applicable.
+    path : str, optional
+        Path to the spectrum data folder.
+    dim : int
+        The dimension of the spectrum (1 for 1D, 2 for 2D).
+    
+    Notes
+    -----
+    - The Spectrum instance will work with baseline corrected data in the
+      `spc_c` attribute if correction has been performed, otherwise `spc`
+      will be used.
+    - If you iterate over the object, you will iterate over all points in the
+      spectrum.
+    - Slicing:
+        - ``spectrum[12:15]`` yields a slice from index 12 to (including)
+          14 as usual.
+        - ``spectrum[Ppm(14:18)]`` yields the spectrum from 14 ppm to 18 ppm.
 
     """
     def __init__(self, folder, procno, generic_f1):
@@ -131,6 +205,7 @@ class Spectrum:
 
         self.base = None
         self.color = None
+        self.mass = None
         self.name = None
         self.path = None
         self.spc_c = None
@@ -213,7 +288,7 @@ class Spectrum:
                 int(self.proc_pars_f2['NC_proc'])
 
     @staticmethod
-    def deconvolute_1d(spc, functions, minimizer=None):
+    def deconvolute_1d(spc, functions, minimizer=None, args=None):
         """
         Deconvolutes a spectrum with arbitrary functions.
 
@@ -242,16 +317,21 @@ class Spectrum:
                     first function is prefixed by 's0', the second by 's1' and so
                     on.
 
-                    To enforce increasing iso values, you can use a delta parameter as a factor:
+                    To enforce increasing iso values, you can use a delta parameter as a factor: ::
+                    
                         ('iso', 5, True, 1, 10, None),
                         ('delta', 2, True, 0.1, 10, None),
                         ('iso', 10, True, 1, 10, 's0iso+s1delta')
+                        
                     This will ensure the second iso is always offset by delta from the first.
 
-                    To constrain integrals between peaks, use the integral parameter with an expr:
+                    To constrain integrals between peaks, use the integral parameter with an expr: ::
+                    
                         ('integral', r, False, False, f, 's0integral')
+                        
                     The penalty will enforce the ratio r (0 not allowed) of the peaks and/or
-                    equality of integrals as specified by f. The expression for the penalty is as follows:
+                    equality of integrals as specified by f. The expression for the penalty is as follows: ::
+                    
                         penalty = penalty_factor * (integral_i - ratio * integral_ref) ** 2
 
                 - kwargs : dict
@@ -263,6 +343,7 @@ class Spectrum:
                         'kwargs' : {'xaxis' : my_axis}
 
         minimizer : {'nelder', 'lbfgsb', 'powell', 'cg', 'newton', ...}
+        
             Use another minimizer algorithm. See the `lmfit homepage
             <http://lmfit.github.io/lmfit-py/fitting.html#fit-methods-table>`_
             for available options. A Levenberg-Marquardt will always be
@@ -309,7 +390,7 @@ class Spectrum:
         angles for the CSA calculation.
 
         If you wanted to add a second Pseudo-Voigt signal with identical FWHM
-        and Gauss/Lorentz ratio, you'd use ::
+        and Gauss/Lorentz ratio, you'd use: ::
 
             ('sigma', 1, True, .1, 3, 's2sigma'),
             ('gamma', 1, True, .1, 3, 's2gamma'),
@@ -318,7 +399,7 @@ class Spectrum:
         in its `params` value.
 
         The optimized values are returned in a list. If you had used only
-        Pseudo-Voigt functions, you could easily plot it with ::
+        Pseudo-Voigt functions, you could easily plot it with: ::
 
             plot(my_spc.axis_f2[Ppm(300, -100)],
                  np.sum(pseudovoigt(
@@ -328,7 +409,7 @@ class Spectrum:
         assuming that you wrote the result to `opt`.
         
         Fit a spectrum with two pseudo-Voigt peaks, where the second peak's iso is always offset by delta from the first,
-        and the integrals are constrained to be equal:
+        and the integrals are constrained to be equal: ::
 
             functions = [
                 {'function': morty.analytical.pseudovoigt,
@@ -416,8 +497,8 @@ class Spectrum:
             return intensity * (eta * (sigma / 2) * 2.1289340388624525 +
                                 (1 - eta) * gamma * 1.5707963267948966)
 
-#TODO: FIX the problem, that integral is needed in the base
-# at some time remove fixed pseudovoigt_integral and implement transfered integral in parameter
+#TODO: At some point add the possibility to use different integral functions it would be
+# easy to implement it in the 'integral' parameter index 2 and 3 are still free to use
 
         def complete_deviation(arguments, spc, functions):
             my_args = arguments.valuesdict()
@@ -454,10 +535,14 @@ class Spectrum:
 
         # Use another minimizer first, if requested.
         if minimizer is not None:
-            premin = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions), method=minimizer)
+            premin = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions), method=minimizer, max_nfev=20000, xtol=1e-10, ftol=1e-10)
             fit_parameters = premin.params
-        opt = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions))
-
+        #opt1 = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions),method='nelder', max_nfev=16000)
+        opt = lmfit.minimize(complete_deviation, fit_parameters, args=(spc, functions), method='least_squares', max_nfev=50000, ftol=1e-10, xtol=1e-10, gtol=1e-10)
+        #print(opt.message)
+        #print(opt.nvars)
+        #print(opt.success)
+        
         # Extract results and uncertainties
         results, uncert = [None] * len(functions), [None] * len(functions)
         for i, func in enumerate(functions):
@@ -563,7 +648,7 @@ class Spectrum1D(Spectrum):
     You can easily read in a TOPSPIN folder and plot the 1D: ::
 
         myspc = Spectrum1D('myfolder')
-        plot(myspc.axisf2, mySpc)
+        plot(myspc.axis_f2, mySpc)
 
     """
 
@@ -778,6 +863,8 @@ class Spectrum1D(Spectrum):
             afterwards, since it is the only algorithm that yields
             uncertainties. If not set, a single Levenberg-Marquardt	run will be
             performed.
+        args : dict, optional
+            Additional arguments to be passed to the function.
 
         Returns
         -------

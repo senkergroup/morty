@@ -45,10 +45,9 @@ def pseudovoigt(x_axis, iso, sigma, gamma, intensity, eta):
     if gamma is None:
         gamma = sigma
 
-    return (intensity * (eta * np.exp(
-        -0.69314718055994529 * 4 * ((x_axis - iso) / sigma) ** 2) +
-                         (1 - eta) * (1 / (1 + 4 * ((x_axis - iso) /
-                                                    gamma) ** 2))))
+    return (intensity *
+            (eta * np.exp(-0.69314718055994529 * 4 * ((x_axis - iso) / sigma) ** 2) +
+            (1 - eta) * (1 / (1 + 4 * ((x_axis - iso) / gamma) ** 2))))
 
 
 def pseudovoigt_integral(sigma, gamma, intensity, eta):
